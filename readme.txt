@@ -51,6 +51,14 @@ LobbyChat **does not call any third-party server by default**. The only network 
 
 No telemetry, no analytics, no "phone home." All data lives in your own `wp_lobbychat*` tables.
 
+= Try it live =
+
+See LobbyChat running in production at [pakgamershub.com/shoutbox](https://pakgamershub.com/shoutbox) (this site uses LobbyChat plus some custom community-specific extensions).
+
+= Roadmap =
+
+LobbyChat is the free, standalone version. Premium add-ons with gaming-community features — looking-for-group buttons, platform tags, profile-card integration, and richer moderation tools — are in development. Sign up for updates by following the GitHub repository.
+
 = Support development =
 
 LobbyChat is free and developed in spare time. If it helps your community, you can support development at [wise.com/pay/me/asadk372](https://wise.com/pay/me/asadk372). Every bit is appreciated. ♥
