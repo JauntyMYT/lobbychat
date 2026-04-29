@@ -1,10 +1,10 @@
-=== LobbyChat — Live Shoutbox & Community Chat ===
-Contributors: lobbychat
+=== LobbyChat ===
+Contributors: jauntymellifluous
 Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,17 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 
 == Changelog ==
 
+= 1.0.2 =
+* Plugin Check compliance: addressed all errors and warnings from the official WordPress Plugin Check tool.
+* Replaced `parse_url()` with `wp_parse_url()`, `mt_rand()` with `wp_rand()`, `date()` with `gmdate()`.
+* Added `wp_unslash()` to all `$_POST` and `$_SERVER` reads before sanitization.
+* Refactored `get_messages()` to avoid dynamic SQL fragments — now uses two clean prepared queries.
+* Added documented phpcs suppressions for legitimate direct-DB access (custom plugin tables) and bot logging.
+* Removed redundant `load_plugin_textdomain()` (WP.org auto-loads translations since WP 4.6).
+* Removed `Domain Path` header (no `/languages/` folder needed for WP.org-hosted plugins).
+* Bumped `Tested up to: 6.9` to match current WordPress release.
+* Renamed template-scope variables to use full `lobbychat_` prefix.
+
 = 1.0.1 =
 * Fixed: Send button not working in some themes — moved script localization earlier so the LobbyChat global is always defined when the JS loads.
 * Fixed: Click handler now uses event delegation, so it survives DOM changes from page builders and caching plugins.
@@ -145,6 +156,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Plugin Check compliance pass. Recommended upgrade.
 
 = 1.0.1 =
 Fixes the send button not working in certain themes. Recommended upgrade.

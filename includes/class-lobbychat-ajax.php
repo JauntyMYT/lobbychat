@@ -24,15 +24,27 @@ class LobbyChat_Ajax {
     private static function err( $msg, $c = 400 ) { wp_send_json_error( [ 'message' => $msg ], $c ); wp_die(); }
 
     private static function get_ip() {
-        return sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0' );
+        return isset( $_SERVER['REMOTE_ADDR'] )
+            ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) )
+            : '0.0.0.0';
     }
 
     private static function get_ua() {
-        return sanitize_text_field( $_SERVER['HTTP_USER_AGENT'] ?? '' );
+        return isset( $_SERVER['HTTP_USER_AGENT'] )
+            ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) )
+            : '';
     }
 
+    /**
+     * Verify the AJAX nonce. Aborts with a 403 if invalid.
+     * After this call returns, the request is guaranteed nonce-verified —
+     * any $_POST reads after this point can safely use the
+     * phpcs:ignore WordPress.Security.NonceVerification.* annotation.
+     */
     private static function check_nonce() {
-        $nonce = $_POST['nonce'] ?? $_GET['nonce'] ?? '';
+        $nonce = isset( $_POST['nonce'] )
+            ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) )
+            : ( isset( $_GET['nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['nonce'] ) ) : '' );
         if ( ! wp_verify_nonce( $nonce, 'lobbychat_nonce' ) ) {
             self::err( __( 'Security check failed.', 'lobbychat' ), 403 );
         }
@@ -177,10 +189,13 @@ class LobbyChat_Ajax {
 
     public static function lobbychat_get() {
         self::check_nonce();
-        $uid      = get_current_user_id();
-        $ip       = self::get_ip();
-        $since_id = intval( $_POST['since_id'] ?? 0 );
-        $limit    = min( intval( $_POST['limit'] ?? 40 ), 60 );
+        $uid = get_current_user_id();
+        $ip  = self::get_ip();
+        // Nonce already verified above; phpcs can't trace cross-method.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $since_id = isset( $_POST['since_id'] ) ? intval( $_POST['since_id'] ) : 0;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $limit = isset( $_POST['limit'] ) ? min( intval( $_POST['limit'] ), 60 ) : 40;
 
         self::ping_presence( $uid, $ip );
 
@@ -215,10 +230,15 @@ class LobbyChat_Ajax {
     public static function lobbychat_send() {
         self::check_nonce();
 
-        $uid        = get_current_user_id();
-        $ip         = self::get_ip();
-        $message    = sanitize_text_field( trim( $_POST['message'] ?? '' ) );
-        $link_url   = esc_url_raw( trim( $_POST['link_url']   ?? '' ) );
+        $uid = get_current_user_id();
+        $ip  = self::get_ip();
+
+        // Nonce verified above; phpcs can't trace cross-method.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+        $message    = isset( $_POST['message'] )  ? sanitize_text_field( wp_unslash( $_POST['message']  ) ) : '';
+        $message    = trim( $message );
+        $link_url   = isset( $_POST['link_url'] ) ? esc_url_raw( wp_unslash( $_POST['link_url'] ) ) : '';
+        $link_url   = trim( $link_url );
         $guest_name = '';
 
         $allow_guests = (int) get_option( 'lobbychat_allow_guests', 1 );
@@ -231,10 +251,14 @@ class LobbyChat_Ajax {
             if ( ! $allow_guests ) {
                 self::err( __( 'Please log in to chat.', 'lobbychat' ), 401 );
             }
-            $guest_name = sanitize_text_field( trim( $_POST['guest_name'] ?? '' ) );
+            $guest_name = isset( $_POST['guest_name'] )
+                ? sanitize_text_field( wp_unslash( $_POST['guest_name'] ) )
+                : '';
+            $guest_name = trim( $guest_name );
             if ( ! $guest_name ) self::err( __( 'Please enter a name.', 'lobbychat' ) );
             if ( strlen( $guest_name ) > 30 ) self::err( __( 'Name too long.', 'lobbychat' ) );
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         if ( ! $message ) self::err( __( 'Message cannot be empty.', 'lobbychat' ) );
         if ( mb_strlen( $message ) > $max_length ) self::err( __( 'Message too long.', 'lobbychat' ) );
@@ -274,7 +298,7 @@ class LobbyChat_Ajax {
             // Optional host whitelist via filter (defaults to allowing all hosts).
             $allowed = apply_filters( 'lobbychat_allowed_link_hosts', null );
             if ( is_array( $allowed ) && ! empty( $allowed ) ) {
-                $host = strtolower( parse_url( $link_url, PHP_URL_HOST ) ?? '' );
+                $host = strtolower( wp_parse_url( $link_url, PHP_URL_HOST ) ?? '' );
                 if ( ! in_array( $host, $allowed, true ) ) {
                     self::err( __( 'That link host is not allowed.', 'lobbychat' ) );
                 }
@@ -312,6 +336,7 @@ class LobbyChat_Ajax {
         try {
             do_action( 'lobbychat_after_send', $uid, $id, $row );
         } catch ( \Throwable $e ) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log( 'lobbychat_after_send hook failed: ' . $e->getMessage() );
         }
 
@@ -322,10 +347,15 @@ class LobbyChat_Ajax {
 
     public static function lobbychat_react() {
         self::check_nonce();
-        $uid        = get_current_user_id();
-        $ip         = self::get_ip();
-        $message_id = intval( $_POST['message_id'] ?? 0 );
-        $emoji      = sanitize_text_field( $_POST['emoji'] ?? '' );
+        $uid = get_current_user_id();
+        $ip  = self::get_ip();
+        // Nonce verified above.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+        $message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+        $emoji      = isset( $_POST['emoji'] )
+            ? sanitize_text_field( wp_unslash( $_POST['emoji'] ) )
+            : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         $allowed_emojis = (array) apply_filters( 'lobbychat_allowed_reactions', [ '👍', '❤️', '😂', '🔥', '🎉' ] );
         if ( ! in_array( $emoji, $allowed_emojis, true ) ) self::err( __( 'Invalid reaction.', 'lobbychat' ) );
@@ -357,9 +387,10 @@ class LobbyChat_Ajax {
 
     public static function lobbychat_report() {
         self::check_nonce();
-        $uid        = get_current_user_id();
-        $ip         = self::get_ip();
-        $message_id = intval( $_POST['message_id'] ?? 0 );
+        $uid = get_current_user_id();
+        $ip  = self::get_ip();
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
         $threshold  = max( 1, (int) apply_filters( 'lobbychat_report_threshold', 5 ) );
         $count      = LobbyChat_DB::report_message( $message_id, $uid, $ip );
         if ( $count >= $threshold ) LobbyChat_DB::delete_message( $message_id );
@@ -370,9 +401,10 @@ class LobbyChat_Ajax {
 
     public static function lobbychat_delete() {
         self::check_nonce();
-        $uid        = get_current_user_id();
-        $ip         = self::get_ip();
-        $message_id = intval( $_POST['message_id'] ?? 0 );
+        $uid = get_current_user_id();
+        $ip  = self::get_ip();
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
         $row        = LobbyChat_DB::get_message( $message_id );
         if ( ! $row ) self::err( __( 'Not found.', 'lobbychat' ) );
 
@@ -392,7 +424,9 @@ class LobbyChat_Ajax {
     public static function lobbychat_pin() {
         self::check_nonce();
         if ( ! self::is_mod( get_current_user_id() ) ) self::err( __( 'Not authorised.', 'lobbychat' ), 403 );
-        LobbyChat_DB::pin_message( intval( $_POST['message_id'] ?? 0 ) );
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+        LobbyChat_DB::pin_message( $message_id );
         self::ok();
     }
 
@@ -408,7 +442,7 @@ class LobbyChat_Ajax {
     public static function fetch_preview_public( $url ) { return self::fetch_link_preview( $url ); }
 
     private static function fetch_link_preview( $url ) {
-        $host = strtolower( parse_url( $url, PHP_URL_HOST ) ?? '' );
+        $host = strtolower( wp_parse_url( $url, PHP_URL_HOST ) ?? '' );
         if ( in_array( $host, [ 'youtube.com', 'www.youtube.com', 'youtu.be' ], true ) ) {
             return self::youtube_preview( $url );
         }

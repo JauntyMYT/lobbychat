@@ -9,17 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$lbc_uid          = get_current_user_id();
-$lbc_logged_in    = (bool) $lbc_uid;
-$lbc_allow_guests = (int) get_option( 'lobbychat_allow_guests', 1 );
-$lbc_allow_links  = (int) get_option( 'lobbychat_allow_links', 1 );
-$lbc_max_length   = (int) get_option( 'lobbychat_max_length', 500 );
-$lbc_show_brand   = (int) get_option( 'lobbychat_show_branding', 1 );
-$lbc_user         = $lbc_uid ? get_userdata( $lbc_uid ) : null;
-$lbc_is_mod       = $lbc_uid && (
+$lobbychat_uid          = get_current_user_id();
+$lobbychat_logged_in    = (bool) $lobbychat_uid;
+$lobbychat_allow_guests = (int) get_option( 'lobbychat_allow_guests', 1 );
+$lobbychat_allow_links  = (int) get_option( 'lobbychat_allow_links', 1 );
+$lobbychat_max_length   = (int) get_option( 'lobbychat_max_length', 500 );
+$lobbychat_show_brand   = (int) get_option( 'lobbychat_show_branding', 1 );
+$lobbychat_user         = $lobbychat_uid ? get_userdata( $lobbychat_uid ) : null;
+$lobbychat_is_mod       = $lobbychat_uid && (
 	current_user_can( 'manage_options' )
 	|| current_user_can( 'lobbychat_moderate' )
-	|| ( $lbc_user && in_array( 'lobbychat_moderator', (array) $lbc_user->roles, true ) )
+	|| ( $lobbychat_user && in_array( 'lobbychat_moderator', (array) $lobbychat_user->roles, true ) )
 );
 ?>
 
@@ -35,11 +35,11 @@ $lbc_is_mod       = $lbc_uid && (
 			</span>
 		</div>
 		<div class="lobbychat-header-right">
-			<?php if ( $lbc_logged_in ) : ?>
+			<?php if ( $lobbychat_logged_in ) : ?>
 				<a class="lobbychat-icon-btn lobbychat-profile-btn"
-				   href="<?php echo esc_url( get_author_posts_url( $lbc_uid ) ); ?>"
+				   href="<?php echo esc_url( get_author_posts_url( $lobbychat_uid ) ); ?>"
 				   title="<?php esc_attr_e( 'My Profile', 'lobbychat' ); ?>">
-					<img src="<?php echo esc_url( get_avatar_url( $lbc_uid, [ 'size' => 20, 'default' => 'identicon' ] ) ); ?>"
+					<img src="<?php echo esc_url( get_avatar_url( $lobbychat_uid, [ 'size' => 20, 'default' => 'identicon' ] ) ); ?>"
 						 width="20" height="20" alt="">
 				</a>
 			<?php else : ?>
@@ -60,7 +60,7 @@ $lbc_is_mod       = $lbc_uid && (
 		<div id="lobbychat-pinned" class="lobbychat-pinned" style="display:none">
 			<span class="lobbychat-pin-icon" aria-hidden="true">📌</span>
 			<span id="lobbychat-pinned-text"></span>
-			<?php if ( $lbc_is_mod ) : ?>
+			<?php if ( $lobbychat_is_mod ) : ?>
 				<button type="button" class="lobbychat-unpin-btn" id="lobbychat-unpin-btn" aria-label="<?php esc_attr_e( 'Unpin', 'lobbychat' ); ?>">✕</button>
 			<?php endif; ?>
 		</div>
@@ -75,13 +75,13 @@ $lbc_is_mod       = $lbc_uid && (
 	<!-- ══ INPUT AREA ════════════════════════════════════════ -->
 	<div class="lobbychat-input-area" id="lobbychat-input-area">
 
-		<?php if ( ! $lbc_logged_in && $lbc_allow_guests ) : ?>
+		<?php if ( ! $lobbychat_logged_in && $lobbychat_allow_guests ) : ?>
 		<!-- Guest name -->
 		<div class="lobbychat-guest-row">
 			<input type="text" id="lobbychat-guest-name" class="lobbychat-name-input"
 				   placeholder="<?php esc_attr_e( 'Your name (guest)', 'lobbychat' ); ?>" maxlength="30">
 		</div>
-		<?php elseif ( ! $lbc_logged_in ) : ?>
+		<?php elseif ( ! $lobbychat_logged_in ) : ?>
 		<div class="lobbychat-locked">
 			<?php
 			printf(
@@ -93,23 +93,23 @@ $lbc_is_mod       = $lbc_uid && (
 		</div>
 		<?php endif; ?>
 
-		<?php if ( $lbc_logged_in || $lbc_allow_guests ) : ?>
+		<?php if ( $lobbychat_logged_in || $lobbychat_allow_guests ) : ?>
 
 		<!-- Message row -->
 		<div class="lobbychat-msg-row">
-			<?php if ( $lbc_logged_in ) : ?>
+			<?php if ( $lobbychat_logged_in ) : ?>
 				<img class="lobbychat-my-avatar"
-					 src="<?php echo esc_url( get_avatar_url( $lbc_uid, [ 'size' => 28, 'default' => 'identicon' ] ) ); ?>"
+					 src="<?php echo esc_url( get_avatar_url( $lobbychat_uid, [ 'size' => 28, 'default' => 'identicon' ] ) ); ?>"
 					 width="28" height="28" alt="">
 			<?php endif; ?>
 			<input type="text" id="lobbychat-message" class="lobbychat-msg-input"
 				   placeholder="<?php esc_attr_e( 'Say something…', 'lobbychat' ); ?>"
-				   maxlength="<?php echo esc_attr( $lbc_max_length ); ?>">
-			<span class="lobbychat-char-count" id="lobbychat-char-count"><?php echo esc_html( $lbc_max_length ); ?></span>
+				   maxlength="<?php echo esc_attr( $lobbychat_max_length ); ?>">
+			<span class="lobbychat-char-count" id="lobbychat-char-count"><?php echo esc_html( $lobbychat_max_length ); ?></span>
 		</div>
 
 		<!-- Link row (logged in only, if links enabled) -->
-		<?php if ( $lbc_logged_in && $lbc_allow_links ) : ?>
+		<?php if ( $lobbychat_logged_in && $lobbychat_allow_links ) : ?>
 		<div class="lobbychat-link-row" id="lobbychat-link-row" style="display:none">
 			<input type="url" id="lobbychat-link-url" class="lobbychat-link-input"
 				   placeholder="<?php esc_attr_e( 'Paste a URL…', 'lobbychat' ); ?>">
@@ -120,7 +120,7 @@ $lbc_is_mod       = $lbc_uid && (
 		<!-- Action buttons -->
 		<div class="lobbychat-actions">
 			<div class="lobbychat-actions-left">
-				<?php if ( $lbc_logged_in && $lbc_allow_links ) : ?>
+				<?php if ( $lobbychat_logged_in && $lobbychat_allow_links ) : ?>
 					<button type="button" class="lobbychat-action-btn" id="lobbychat-link-btn" title="<?php esc_attr_e( 'Share a link', 'lobbychat' ); ?>">🔗</button>
 				<?php endif; ?>
 			</div>
@@ -153,7 +153,7 @@ $lbc_is_mod       = $lbc_uid && (
 		</div>
 	</div>
 
-	<?php if ( $lbc_show_brand ) : ?>
+	<?php if ( $lobbychat_show_brand ) : ?>
 	<div class="lobbychat-branding">
 		<a href="<?php echo esc_url( LBC_DONATE_URL ); ?>" target="_blank" rel="noopener nofollow">
 			<?php esc_html_e( 'Powered by LobbyChat', 'lobbychat' ); ?> <span aria-hidden="true">♥</span>

@@ -1,18 +1,17 @@
 <?php
 /**
  * Plugin Name:       LobbyChat
- * Plugin URI:        https://wordpress.org/plugins/lobbychat/
+ * Plugin URI:        https://github.com/jauntymellifluous/lobbychat
  * Description:       A live, casual shoutbox for your community. Real-time messages, emoji reactions, link previews, moderator tools, and an optional AI chat companion. No third-party dependencies.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 5.8
  * Requires PHP:      7.2
- * Author:            LobbyChat
- * Author URI:        https://wordpress.org/plugins/lobbychat/
+ * Author:            Asad Khalil
+ * Author URI:        https://profiles.wordpress.org/jauntymellifluous/
  * Donate link:       https://wise.com/pay/me/asadk372
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       lobbychat
- * Domain Path:       /languages
  *
  * @package LobbyChat
  */
@@ -21,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LBC_VERSION', '1.0.1' );
+define( 'LBC_VERSION', '1.0.2' );
 define( 'LBC_FILE',    __FILE__ );
 define( 'LBC_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'LBC_URL',     plugin_dir_url( __FILE__ ) );
@@ -97,8 +96,6 @@ function lobbychat_run_daily_cleanup() {
  * Boot the plugin.
  */
 function lobbychat_init() {
-	load_plugin_textdomain( 'lobbychat', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-
 	LobbyChat_Ajax::init();
 	LobbyChat_Shortcode::init();
 	LobbyChat_Bot::init();

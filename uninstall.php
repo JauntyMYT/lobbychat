@@ -15,17 +15,19 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 global $wpdb;
 
 // Drop tables.
-$tables = [
+// Direct queries are necessary on uninstall — there's no WP API for DROP TABLE.
+$lobbychat_tables = [
 	$wpdb->prefix . 'lobbychat_messages',
 	$wpdb->prefix . 'lobbychat_reports',
 	$wpdb->prefix . 'lobbychat_online',
 ];
-foreach ( $tables as $t ) {
-	$wpdb->query( "DROP TABLE IF EXISTS `{$t}`" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+foreach ( $lobbychat_tables as $lobbychat_t ) {
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+	$wpdb->query( "DROP TABLE IF EXISTS `{$lobbychat_t}`" );
 }
 
 // Delete options.
-$options = [
+$lobbychat_options = [
 	'lobbychat_max_length',
 	'lobbychat_rate_logged',
 	'lobbychat_rate_guest',
@@ -57,8 +59,8 @@ $options = [
 	'lobbychat_bot_hourly_bucket',
 	'lobbychat_bot_daily_bucket',
 ];
-foreach ( $options as $opt ) {
-	delete_option( $opt );
+foreach ( $lobbychat_options as $lobbychat_opt ) {
+	delete_option( $lobbychat_opt );
 }
 
 // Clear scheduled events.
@@ -68,8 +70,8 @@ wp_clear_scheduled_hook( 'lobbychat_daily_cleanup' );
 // Remove the custom role.
 remove_role( 'lobbychat_moderator' );
 
-// Strip the custom cap from administrator (in case admins want to fully clean up).
-$admin = get_role( 'administrator' );
-if ( $admin ) {
-	$admin->remove_cap( 'lobbychat_moderate' );
+// Strip the custom cap from administrator.
+$lobbychat_admin_role = get_role( 'administrator' );
+if ( $lobbychat_admin_role ) {
+	$lobbychat_admin_role->remove_cap( 'lobbychat_moderate' );
 }

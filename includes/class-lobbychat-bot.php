@@ -19,6 +19,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class LobbyChat_Bot {
 
+	// Bot logs errors and (optionally) debug events via error_log() — these
+	// only fire on actual exceptions (try/catch in maybe_reply, send_reply,
+	// generate_reply) or when debug logging is explicitly enabled by the
+	// admin via the lobbychat_bot_debug option. error_log() is the right tool
+	// here: this code runs in WP cron without a UI surface, so a logger is
+	// the only way to surface API failures to the admin.
+	//
+	// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
+	// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_var_export
+
 	const OPT_LAST_REPLY    = 'lobbychat_bot_last_reply';
 	const OPT_HOURLY_BUCKET = 'lobbychat_bot_hourly_bucket';
 	const OPT_DAILY_BUCKET  = 'lobbychat_bot_daily_bucket';
@@ -68,7 +78,7 @@ class LobbyChat_Bot {
 
 			if ( ! self::should_trigger( $text ) ) { self::dbg( 'skip: no trigger for: ' . $text ); return; }
 
-			$delay = mt_rand( 3, 12 );
+			$delay = wp_rand( 3, 12 );
 			$scheduled = wp_schedule_single_event(
 				time() + $delay,
 				'lobbychat_bot_send_reply',
@@ -113,7 +123,7 @@ class LobbyChat_Bot {
 				|| preg_match( '/\b(anyone|anybody|someone)\b/i', $low );
 			if ( $is_q ) {
 				$chance = (int) get_option( 'lobbychat_bot_question_chance', 75 );
-				if ( mt_rand( 1, 100 ) <= $chance ) {
+				if ( wp_rand( 1, 100 ) <= $chance ) {
 					return true;
 				}
 			}
@@ -121,7 +131,7 @@ class LobbyChat_Bot {
 
 		// Random chance for normal messages.
 		$chance = (int) get_option( 'lobbychat_bot_random_chance', 8 );
-		return ( mt_rand( 1, 100 ) <= $chance );
+		return ( wp_rand( 1, 100 ) <= $chance );
 	}
 
 	/* ─────────────────────────────────────────────────────────
