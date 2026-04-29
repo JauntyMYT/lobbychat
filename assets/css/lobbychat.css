@@ -1,0 +1,850 @@
+/* ═══════════════════════════════════════════════════════════
+   LobbyChat — frontend styles
+═══════════════════════════════════════════════════════════ */
+
+.lobbychat-wrap {
+    --lobbychat-bg:       #ffffff;
+    --lobbychat-hdr:      #1a1a1a;
+    --lobbychat-accent:   #4f46e5;
+    --lobbychat-border:   #eeeeee;
+    --lobbychat-muted:    #888888;
+    --lobbychat-text:     #1a1a1a;
+    --lobbychat-input-bg: #f7f7f7;
+    --lobbychat-radius:   10px;
+
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    border: 1px solid var(--lobbychat-border);
+    border-radius: var(--lobbychat-radius);
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    background: var(--lobbychat-bg);
+    max-width: 100%;
+    width: 100%;
+}
+
+/* ── HEADER ────────────────────────────────────────────── */
+.lobbychat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--lobbychat-hdr);
+    padding: 10px 14px;
+}
+
+.lobbychat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lobbychat-live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: lobbychat-pulse 1.5s infinite;
+    flex-shrink: 0;
+}
+
+@keyframes lobbychat-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .4; }
+}
+
+.lobbychat-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.lobbychat-online {
+    font-size: 11px;
+    color: #888;
+    background: rgba(255,255,255,.08);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.lobbychat-header-right {
+    display: flex;
+    gap: 6px;
+}
+
+.lobbychat-icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #888;
+    padding: 4px 6px;
+    border-radius: 5px;
+    line-height: 1;
+    transition: background .15s, color .15s;
+}
+
+.lobbychat-icon-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+.lobbychat-icon-btn.active { color: #22c55e; }
+.lobbychat-profile-btn { padding: 3px 6px; display: flex; align-items: center; text-decoration: none; }
+
+/* ── PINNED ────────────────────────────────────────────── */
+.lobbychat-pinned {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+    padding: 7px 12px;
+    font-size: 12px;
+    color: #92400e;
+}
+
+.lobbychat-pin-icon { flex-shrink: 0; }
+
+.lobbychat-unpin-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #92400e;
+    font-size: 12px;
+    opacity: .6;
+    padding: 0 4px;
+}
+
+.lobbychat-unpin-btn:hover { opacity: 1; }
+
+/* ── FEED ──────────────────────────────────────────────── */
+.lobbychat-feed {
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 8px 0;
+    scroll-behavior: smooth;
+}
+
+.lobbychat-feed::-webkit-scrollbar { width: 4px; }
+.lobbychat-feed::-webkit-scrollbar-track { background: transparent; }
+.lobbychat-feed::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+.lobbychat-loading {
+    text-align: center;
+    padding: 24px;
+    color: var(--lobbychat-muted);
+    font-size: 13px;
+}
+
+/* ── MESSAGE ───────────────────────────────────────────── */
+.lobbychat-msg {
+    display: flex;
+    gap: 8px;
+    padding: 7px 12px;
+    transition: background .15s;
+    position: relative;
+}
+
+.lobbychat-msg:hover { background: #fafafa; }
+.lobbychat-msg.lobbychat-new { animation: lobbychat-slide-in .25s ease; }
+
+@keyframes lobbychat-slide-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.lobbychat-msg-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    margin-top: 2px;
+}
+
+.lobbychat-msg-avatar-guest {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.lobbychat-msg-content { flex: 1; min-width: 0; }
+
+.lobbychat-msg-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+
+.lobbychat-msg-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--lobbychat-text);
+}
+
+.lobbychat-msg-name.lobbychat-mod-name { color: var(--lobbychat-accent); }
+
+.lobbychat-msg-time {
+    font-size: 10px;
+    color: var(--lobbychat-muted);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.lobbychat-msg-text {
+    font-size: 13px;
+    color: var(--lobbychat-text);
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+/* @mention highlight */
+.lobbychat-mention {
+    color: var(--lobbychat-accent);
+    font-weight: 600;
+}
+
+/* ── LINK PREVIEWS ─────────────────────────────────────── */
+.lobbychat-preview {
+    margin-top: 7px;
+    border: 1px solid var(--lobbychat-border);
+    border-radius: 7px;
+    overflow: hidden;
+    background: #f9f9f9;
+    max-width: 280px;
+}
+
+.lobbychat-preview a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.lobbychat-preview-img {
+    width: 100%;
+    max-height: 140px;
+    object-fit: cover;
+    display: block;
+}
+
+.lobbychat-preview-body {
+    padding: 8px 10px;
+}
+
+.lobbychat-preview-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--lobbychat-text);
+    margin-bottom: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.lobbychat-preview-desc {
+    font-size: 11px;
+    color: var(--lobbychat-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.lobbychat-preview-type {
+    font-size: 10px;
+    color: var(--lobbychat-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-top: 4px;
+}
+
+/* YouTube play button overlay */
+.lobbychat-yt-wrap {
+    position: relative;
+    cursor: pointer;
+}
+
+.lobbychat-yt-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #fff;
+    pointer-events: none;
+}
+
+/* ── REACTIONS ─────────────────────────────────────────── */
+.lobbychat-reactions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.lobbychat-reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--lobbychat-text);
+}
+
+.lobbychat-reaction-btn:hover { background: #e5e7eb; }
+.lobbychat-reaction-btn.lobbychat-reacted {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: var(--lobbychat-accent);
+}
+
+.lobbychat-reaction-count {
+    font-weight: 700;
+    font-size: 11px;
+}
+
+/* Add reaction button */
+.lobbychat-add-reaction {
+    background: transparent;
+    border: 1px dashed #ddd;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--lobbychat-muted);
+    transition: all .15s;
+}
+
+.lobbychat-add-reaction:hover { border-color: var(--lobbychat-accent); color: var(--lobbychat-accent); }
+
+/* Reaction picker */
+.lobbychat-reaction-picker {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 0;
+    background: #fff;
+    border: 1px solid var(--lobbychat-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    z-index: 100;
+    white-space: nowrap;
+}
+
+.lobbychat-reaction-picker button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background .1s;
+}
+
+.lobbychat-reaction-picker button:hover { background: #f3f4f6; }
+
+/* ── MOD ACTIONS ───────────────────────────────────────── */
+.lobbychat-msg-actions {
+    display: none;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.lobbychat-msg:hover .lobbychat-msg-actions { display: flex; }
+
+.lobbychat-action-sm {
+    font-size: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--lobbychat-muted);
+    padding: 1px 5px;
+    border-radius: 4px;
+    transition: all .15s;
+}
+
+.lobbychat-action-sm:hover { background: #f3f4f6; color: var(--lobbychat-text); }
+.lobbychat-action-sm.lobbychat-delete:hover { background: #fee2e2; color: var(--lobbychat-accent); }
+
+/* ── INPUT AREA ────────────────────────────────────────── */
+.lobbychat-input-area {
+    border-top: 1px solid var(--lobbychat-border);
+    padding: 10px 12px;
+    background: #fafafa;
+}
+
+.lobbychat-guest-row { margin-bottom: 8px; }
+
+.lobbychat-name-input,
+.lobbychat-link-input,
+.lobbychat-msg-input {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: var(--lobbychat-text);
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+    box-sizing: border-box;
+}
+
+.lobbychat-name-input:focus,
+.lobbychat-link-input:focus,
+.lobbychat-msg-input:focus {
+    border-color: var(--lobbychat-accent);
+}
+
+.lobbychat-msg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.lobbychat-my-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.lobbychat-char-count {
+    font-size: 11px;
+    color: var(--lobbychat-muted);
+    flex-shrink: 0;
+    min-width: 28px;
+    text-align: right;
+}
+
+.lobbychat-char-count.lobbychat-char-warn { color: #f59e0b; }
+.lobbychat-char-count.lobbychat-char-over { color: var(--lobbychat-accent); }
+
+.lobbychat-link-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.lobbychat-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lobbychat-actions-left { display: flex; gap: 6px; }
+
+.lobbychat-action-btn {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--lobbychat-text);
+    transition: all .15s;
+}
+
+.lobbychat-action-btn:hover { background: #e5e7eb; }
+.lobbychat-action-btn.active { background: #fee2e2; border-color: #fca5a5; color: var(--lobbychat-accent); }
+
+.lobbychat-send-btn {
+    background: var(--lobbychat-accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    transition: background .15s;
+}
+
+.lobbychat-send-btn:hover { background: #a93226; }
+.lobbychat-send-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── COLLAPSED STATE ───────────────────────────────────── */
+.lobbychat-wrap.lobbychat-collapsed .lobbychat-body,
+.lobbychat-wrap.lobbychat-collapsed .lobbychat-input-area {
+    display: none;
+}
+
+/* ── TOAST ─────────────────────────────────────────────── */
+.lobbychat-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    z-index: 999999;
+    animation: lobbychat-toast-in .2s ease;
+}
+
+@keyframes lobbychat-toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .lobbychat-feed { max-height: 260px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   WHO'S ONLINE STRIP
+══════════════════════════════════════════════════════════ */
+.lobbychat-whos-online {
+    background: #fafafa;
+    border-top: 1px solid var(--lobbychat-border);
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--lobbychat-muted);
+}
+
+.lobbychat-wo-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    align-items: flex-start;
+}
+
+.lobbychat-wo-section {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.lobbychat-wo-icon {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+}
+.lobbychat-wo-icon-member { background: #16a34a; }
+.lobbychat-wo-icon-guest  { background: #9ca3af; }
+.lobbychat-wo-icon-bot    { background: #6b7280; border: 1px dashed #374151; }
+
+.lobbychat-wo-label {
+    font-weight: 600;
+    color: #4a4a4a;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.lobbychat-wo-count {
+    font-weight: 600;
+    color: var(--lobbychat-text);
+}
+
+.lobbychat-wo-list {
+    color: var(--lobbychat-text);
+}
+
+.lobbychat-wo-user {
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--lobbychat-text);
+    transition: color 0.15s;
+}
+.lobbychat-wo-user:hover { color: var(--lobbychat-accent); }
+
+.lobbychat-wo-admin {
+    color: var(--lobbychat-accent);
+}
+.lobbychat-wo-admin::after {
+    content: ' ★';
+    font-size: 10px;
+    color: var(--lobbychat-accent);
+}
+
+.lobbychat-wo-mod {
+    color: #16a34a;
+}
+.lobbychat-wo-mod::after {
+    content: ' ◆';
+    font-size: 10px;
+    color: #16a34a;
+}
+
+.lobbychat-wo-member {
+    color: var(--lobbychat-text);
+}
+
+.lobbychat-wo-botname {
+    font-style: italic;
+    color: #6b7280;
+    font-size: 11px;
+}
+
+.lobbychat-wo-empty {
+    color: var(--lobbychat-muted);
+    font-style: italic;
+    font-size: 11px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FULLSCREEN BUTTON + FULLSCREEN MODE
+══════════════════════════════════════════════════════════ */
+.lobbychat-fs-btn {
+    font-size: 16px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FULLSCREEN MODE — bulletproof overlay
+══════════════════════════════════════════════════════════ */
+html.lobbychat-body-fs,
+body.lobbychat-body-fs {
+    overflow: hidden !important;
+    height: 100% !important;
+    position: relative !important;
+}
+
+/* Backdrop dims everything behind the fullscreen shoutbox */
+.lobbychat-fs-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999998;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.lobbychat-body-fs .lobbychat-fs-backdrop {
+    display: block;
+}
+
+/* Floating exit button — guaranteed visible, top-right of viewport */
+.lobbychat-fs-exit {
+    display: none;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1000001;
+    line-height: 1;
+    padding: 0;
+    transition: all 0.2s;
+    align-items: center;
+    justify-content: center;
+}
+.lobbychat-body-fs .lobbychat-fs-exit {
+    display: flex !important;
+}
+.admin-bar.lobbychat-body-fs .lobbychat-fs-exit {
+    top: 48px;
+}
+.lobbychat-fs-exit:hover {
+    background: var(--lobbychat-accent, #4f46e5);
+    border-color: var(--lobbychat-accent, #4f46e5);
+    transform: scale(1.05);
+}
+
+/* The shoutbox itself in fullscreen mode */
+#lobbychat.lobbychat-fullscreen,
+.lobbychat-wrap.lobbychat-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 1000000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--lobbychat-bg, #fff) !important;
+    overflow: hidden !important;
+}
+
+/* Push down past WP admin bar if logged in (32px desktop, 46px mobile) */
+.admin-bar #lobbychat.lobbychat-fullscreen,
+.admin-bar .lobbychat-wrap.lobbychat-fullscreen {
+    top: 32px !important;
+    height: calc(100vh - 32px) !important;
+    height: calc(100dvh - 32px) !important;
+}
+@media screen and (max-width: 782px) {
+    .admin-bar #lobbychat.lobbychat-fullscreen,
+    .admin-bar .lobbychat-wrap.lobbychat-fullscreen {
+        top: 46px !important;
+        height: calc(100vh - 46px) !important;
+        height: calc(100dvh - 46px) !important;
+    }
+}
+
+#lobbychat.lobbychat-fullscreen .lobbychat-header,
+.lobbychat-wrap.lobbychat-fullscreen .lobbychat-header {
+    flex-shrink: 0 !important;
+}
+
+#lobbychat.lobbychat-fullscreen .lobbychat-body,
+.lobbychat-wrap.lobbychat-fullscreen .lobbychat-body {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+#lobbychat.lobbychat-fullscreen .lobbychat-feed,
+.lobbychat-wrap.lobbychat-fullscreen .lobbychat-feed {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-y: auto !important;
+}
+
+#lobbychat.lobbychat-fullscreen .lobbychat-input-area,
+.lobbychat-wrap.lobbychat-fullscreen .lobbychat-input-area {
+    flex-shrink: 0 !important;
+}
+
+#lobbychat.lobbychat-fullscreen .lobbychat-whos-online,
+.lobbychat-wrap.lobbychat-fullscreen .lobbychat-whos-online {
+    flex-shrink: 0 !important;
+}
+
+/* Override collapsed state if it was set */
+#lobbychat.lobbychat-fullscreen.lobbychat-collapsed .lobbychat-body,
+.lobbychat-wrap.lobbychat-fullscreen.lobbychat-collapsed .lobbychat-body {
+    display: flex !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE — use more of the screen, taller feed
+══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .lobbychat-wrap {
+        border-radius: 8px;
+    }
+    .lobbychat-feed {
+        max-height: 50vh;
+        min-height: 320px;
+    }
+    .lobbychat-header {
+        padding: 12px 14px;
+    }
+    .lobbychat-whos-online {
+        padding: 10px 12px;
+        font-size: 11.5px;
+    }
+    .lobbychat-wo-inner {
+        gap: 6px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lobbychat-feed {
+        max-height: 55vh;
+        min-height: 340px;
+    }
+    /* Hide fullscreen exit hint on smaller screens; button icon speaks for itself */
+    .lobbychat-fs-btn { font-size: 14px; }
+    .lobbychat-icon-btn { padding: 4px 6px; }
+    /* In fullscreen on mobile, ensure feed really fills */
+    .lobbychat-wrap.lobbychat-fullscreen .lobbychat-feed {
+        max-height: none !important;
+        min-height: 0 !important;
+    }
+    .lobbychat-wo-section { gap: 5px; }
+}
+
+/* ── Locked state (guests not allowed) ─────────────────── */
+.lobbychat-locked {
+    text-align: center;
+    color: var(--lobbychat-muted);
+    font-size: 13px;
+    padding: 12px 8px;
+    background: var(--lobbychat-input-bg);
+    border-radius: 7px;
+    margin-bottom: 8px;
+}
+.lobbychat-locked a {
+    color: var(--lobbychat-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+.lobbychat-locked a:hover { text-decoration: underline; }
+
+/* ── Username link (when profile_url available) ────────── */
+a.lobbychat-msg-name {
+    color: inherit;
+    text-decoration: none;
+}
+a.lobbychat-msg-name:hover {
+    color: var(--lobbychat-accent);
+    text-decoration: none;
+}
+
+/* ── Branding footer (toggleable) ──────────────────────── */
+.lobbychat-branding {
+    text-align: center;
+    padding: 6px 10px 8px;
+    background: #fafafa;
+    border-top: 1px solid var(--lobbychat-border);
+}
+.lobbychat-branding a {
+    color: #999;
+    font-size: 11px;
+    text-decoration: none;
+    letter-spacing: .2px;
+    transition: color .2s;
+}
+.lobbychat-branding a:hover {
+    color: var(--lobbychat-accent);
+    text-decoration: none;
+}
