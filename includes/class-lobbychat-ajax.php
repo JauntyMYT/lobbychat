@@ -468,28 +468,93 @@ class LobbyChat_Ajax {
 
     private static function og_preview( $url ) {
         $res = wp_remote_get( $url, [
-            'timeout'    => 5,
-            'user-agent' => 'Mozilla/5.0 (compatible; LobbyChatBot/1.0)',
+            'timeout'    => 8,
+            'user-agent' => 'Mozilla/5.0 (compatible; LobbyChatBot/1.0; +https://wordpress.org/plugins/lobbychat/)',
+            'redirection' => 5,
         ] );
-        if ( is_wp_error( $res ) ) return null;
-        $html  = wp_remote_retrieve_body( $res );
-        $title = $desc = $thumb = '';
-        if ( preg_match( '/<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']/', $html, $m ) ) {
-            $title = sanitize_text_field( html_entity_decode( $m[1] ) );
+        if ( is_wp_error( $res ) ) {
+            return self::fallback_preview( $url );
         }
-        if ( preg_match( '/<meta[^>]+property=["\']og:description["\'][^>]+content=["\']([^"\']+)["\']/', $html, $m ) ) {
-            $desc = sanitize_text_field( html_entity_decode( $m[1] ) );
+
+        $html = wp_remote_retrieve_body( $res );
+        if ( empty( $html ) ) {
+            return self::fallback_preview( $url );
         }
-        if ( preg_match( '/<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']/', $html, $m ) ) {
-            $thumb = esc_url( $m[1] );
+
+        $title = self::extract_meta( $html, 'og:title' );
+        $desc  = self::extract_meta( $html, 'og:description' );
+        $thumb = self::extract_meta( $html, 'og:image' );
+
+        // Twitter card fallbacks.
+        if ( ! $title ) $title = self::extract_meta( $html, 'twitter:title' );
+        if ( ! $desc  ) $desc  = self::extract_meta( $html, 'twitter:description' );
+        if ( ! $thumb ) $thumb = self::extract_meta( $html, 'twitter:image' );
+
+        // Plain <title> tag fallback.
+        if ( ! $title && preg_match( '#<title[^>]*>([^<]+)</title>#i', $html, $m ) ) {
+            $title = sanitize_text_field( html_entity_decode( trim( $m[1] ), ENT_QUOTES, 'UTF-8' ) );
         }
-        if ( ! $title ) return null;
+
+        // Plain <meta name="description"> fallback.
+        if ( ! $desc ) {
+            $desc = self::extract_meta( $html, 'description', 'name' );
+        }
+
+        // If we got NOTHING usable, return a bare-bones preview so the link still renders.
+        if ( ! $title && ! $thumb ) {
+            return self::fallback_preview( $url );
+        }
+
+        // If still no title, use the host as a title.
+        if ( ! $title ) {
+            $host = wp_parse_url( $url, PHP_URL_HOST ) ?: $url;
+            $title = $host;
+        }
+
         return [
             'type'  => 'og',
             'title' => $title,
-            'desc'  => substr( $desc, 0, 120 ),
-            'thumb' => $thumb,
+            'desc'  => mb_substr( $desc, 0, 120 ),
+            'thumb' => $thumb ? esc_url_raw( $thumb ) : '',
             'url'   => $url,
         ];
+    }
+
+    /**
+     * Bare-bones preview when the linked page can't be scraped.
+     * Ensures users never silently lose their link.
+     */
+    private static function fallback_preview( $url ) {
+        $host = wp_parse_url( $url, PHP_URL_HOST );
+        return [
+            'type'  => 'og',
+            'title' => $host ?: $url,
+            'desc'  => '',
+            'thumb' => '',
+            'url'   => $url,
+        ];
+    }
+
+    /**
+     * Robust meta-tag extractor — handles either order
+     * (property/content vs content/property) and either quote style.
+     */
+    private static function extract_meta( $html, $key, $attr = 'property' ) {
+        $key_q = preg_quote( $key, '#' );
+        // attr=key first, then content=value
+        if ( preg_match(
+            '#<meta[^>]+' . $attr . '\s*=\s*["\']' . $key_q . '["\'][^>]*?content\s*=\s*["\']([^"\'>]+)["\']#i',
+            $html, $m
+        ) ) {
+            return sanitize_text_field( html_entity_decode( $m[1], ENT_QUOTES, 'UTF-8' ) );
+        }
+        // content=value first, then attr=key
+        if ( preg_match(
+            '#<meta[^>]+content\s*=\s*["\']([^"\'>]+)["\'][^>]*?' . $attr . '\s*=\s*["\']' . $key_q . '["\']#i',
+            $html, $m
+        ) ) {
+            return sanitize_text_field( html_entity_decode( $m[1], ENT_QUOTES, 'UTF-8' ) );
+        }
+        return '';
     }
 }

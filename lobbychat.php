@@ -3,7 +3,7 @@
  * Plugin Name:       LobbyChat
  * Plugin URI:        https://bejaunty.com/plugins/lobbychat
  * Description:       A live, casual shoutbox for your community. Real-time messages, emoji reactions, link previews, moderator tools, and an optional AI chat companion. No third-party dependencies.
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires at least: 5.8
  * Requires PHP:      7.2
  * Author:            Asad Khalil
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LBC_VERSION', '1.0.2' );
+define( 'LBC_VERSION', '1.0.3' );
 define( 'LBC_FILE',    __FILE__ );
 define( 'LBC_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'LBC_URL',     plugin_dir_url( __FILE__ ) );

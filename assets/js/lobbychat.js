@@ -156,7 +156,14 @@
 			: '<span class="lobbychat-msg-name">' + escapeHtml( m.name ) + '</span>';
 
 		const msgText   = highlightMentions( escapeHtml( m.message ) );
-		const preview   = m.preview ? renderPreview( m.preview ) : '';
+		// Render preview if we have one, otherwise show a bare link if link_url is set
+		// (so the link is never silently lost when scraping fails).
+		let preview = '';
+		if ( m.preview ) {
+			preview = renderPreview( m.preview );
+		} else if ( m.link_url ) {
+			preview = renderPreview({ type: 'og', title: m.link_url, desc: '', thumb: '', url: m.link_url });
+		}
 		const reactions = renderReactions( m.reactions, m.id );
 
 		let actions = '';

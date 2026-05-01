@@ -4,7 +4,7 @@ Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -131,6 +131,12 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 
 == Changelog ==
 
+= 1.0.3 =
+* Fixed: Link sharing now works for any URL — previously only worked when the linked page had perfectly-formatted Open Graph tags. Now handles Twitter cards, plain `<title>` tags, and falls back to a bare link card if no metadata is available.
+* Improved: Open Graph parser now handles meta tags with `content` before `property`, mixed quote styles, and follows redirects.
+* Improved: Bumped link-fetch timeout from 5s to 8s for slower-responding sites.
+* Updated: Plugin URI and demo link now point to bejaunty.com.
+
 = 1.0.2 =
 * Plugin Check compliance: addressed all errors and warnings from the official WordPress Plugin Check tool.
 * Replaced `parse_url()` with `wp_parse_url()`, `mt_rand()` with `wp_rand()`, `date()` with `gmdate()`.
@@ -164,6 +170,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+Fixes link sharing — now reliably renders link previews for any URL with a graceful fallback. Recommended upgrade.
 
 = 1.0.2 =
 Plugin Check compliance pass. Recommended upgrade.
