@@ -53,11 +53,11 @@ No telemetry, no analytics, no "phone home." All data lives in your own `wp_lobb
 
 = Try it live =
 
-See LobbyChat running in production at [pakgamershub.com/shoutbox](https://pakgamershub.com/shoutbox) (this site uses LobbyChat plus some custom community-specific extensions).
+See LobbyChat running in production at [bejaunty.com/plugins/lobbychat](https://bejaunty.com/plugins/lobbychat).
 
 = Roadmap =
 
-LobbyChat is the free, standalone version. Premium add-ons with gaming-community features — looking-for-group buttons, platform tags, profile-card integration, and richer moderation tools — are in development. Sign up for updates by following the GitHub repository.
+LobbyChat is the free, standalone version. Premium add-ons with gaming-community features — looking-for-group buttons, platform tags, profile-card integration, and richer moderation tools — are in development. Updates and announcements at [bejaunty.com](https://bejaunty.com).
 
 = Support development =
 

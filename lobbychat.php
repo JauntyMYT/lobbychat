@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       LobbyChat
- * Plugin URI:        https://github.com/jauntymellifluous/lobbychat
+ * Plugin URI:        https://bejaunty.com/plugins/lobbychat
  * Description:       A live, casual shoutbox for your community. Real-time messages, emoji reactions, link previews, moderator tools, and an optional AI chat companion. No third-party dependencies.
  * Version:           1.0.2
  * Requires at least: 5.8
