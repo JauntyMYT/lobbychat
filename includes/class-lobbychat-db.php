@@ -89,7 +89,7 @@ class LobbyChat_DB {
         add_option( 'lobbychat_allow_links',    1 );
         add_option( 'lobbychat_poll_interval',  30000 );
         add_option( 'lobbychat_prune_days',     30 );
-        add_option( 'lobbychat_show_branding',  1 );
+        add_option( 'lobbychat_show_branding',  0 );
         add_option( 'lobbychat_blocklist',      'fuck,shit,cunt,nigger,faggot' );
     }
 

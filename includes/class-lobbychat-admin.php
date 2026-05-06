@@ -122,7 +122,7 @@ class LobbyChat_Admin {
 		$allow_links   = (int) get_option( 'lobbychat_allow_links', 1 );
 		$poll_interval = (int) get_option( 'lobbychat_poll_interval', 30000 );
 		$prune_days    = (int) get_option( 'lobbychat_prune_days', 30 );
-		$show_branding = (int) get_option( 'lobbychat_show_branding', 1 );
+		$show_branding = (int) get_option( 'lobbychat_show_branding', 0 );
 		$blocklist     = (string) get_option( 'lobbychat_blocklist', '' );
 		?>
 		<div class="wrap">

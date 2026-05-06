@@ -14,7 +14,7 @@ $lobbychat_logged_in    = (bool) $lobbychat_uid;
 $lobbychat_allow_guests = (int) get_option( 'lobbychat_allow_guests', 1 );
 $lobbychat_allow_links  = (int) get_option( 'lobbychat_allow_links', 1 );
 $lobbychat_max_length   = (int) get_option( 'lobbychat_max_length', 500 );
-$lobbychat_show_brand   = (int) get_option( 'lobbychat_show_branding', 1 );
+$lobbychat_show_brand   = (int) get_option( 'lobbychat_show_branding', 0 );
 $lobbychat_user         = $lobbychat_uid ? get_userdata( $lobbychat_uid ) : null;
 $lobbychat_is_mod       = $lobbychat_uid && (
 	current_user_can( 'manage_options' )

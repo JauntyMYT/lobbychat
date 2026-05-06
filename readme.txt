@@ -4,7 +4,7 @@ Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,39 @@ LobbyChat exposes several filters and actions for theme/plugin developers:
 * `lobbychat_allowed_reactions` — filter, override the array of allowed reaction emoji
 * `lobbychat_report_threshold` — filter, change the auto-hide report threshold (default: 5)
 
+== External services ==
+
+This plugin does not connect to any external service by default. Two optional features may, **only when explicitly enabled by the site administrator**, contact third-party services:
+
+= 1. Link previews =
+
+When the link-sharing feature is enabled (Settings → LobbyChat → "Allow link sharing", which is on by default), and a logged-in user shares a URL in chat, the plugin's server fetches that URL once to extract Open Graph / Twitter / `<title>` metadata for a preview card.
+
+* **What is sent:** The HTTP request from your server to the URL the user pasted. The request user-agent identifies as `LobbyChatBot/1.0` and includes a link back to your site.
+* **When:** Only at the moment a user posts a message containing a URL.
+* **What is received and stored:** Title, description, and image URL extracted from the page's metadata. Stored in the chat message row in your database.
+* **Special handling for YouTube URLs:** YouTube URLs are first sent to YouTube's public oEmbed endpoint (`https://www.youtube.com/oembed`) to retrieve title and author info. YouTube's [Terms of Service](https://www.youtube.com/static?template=terms) and [Privacy Policy](https://policies.google.com/privacy) apply.
+
+This feature can be fully disabled by un-checking "Allow link sharing" in plugin settings.
+
+= 2. Optional AI chat companion =
+
+When the AI bot is explicitly enabled by the administrator (Settings → LobbyChat AI Bot → "Enable bot", which is **off by default**) and the administrator has provided their own API key for one or both of the providers below, chat messages are sent to that provider for the bot to generate replies.
+
+**Google Gemini API** (`https://generativelanguage.googleapis.com/`)
+* **What it is:** Google's generative AI service, used here to produce conversational chat replies.
+* **What is sent:** Up to 6 most recent chat messages (sender display name + message text), the bot's system prompt, and the administrator's Gemini API key.
+* **When:** Only when the administrator has enabled the bot AND a chat message satisfies the bot's reply-trigger rules (mention, question, or random chance — all configurable).
+* **Terms and privacy:** [Google APIs Terms of Service](https://developers.google.com/terms), [Gemini API Additional Terms](https://ai.google.dev/gemini-api/terms), [Google Privacy Policy](https://policies.google.com/privacy).
+
+**OpenAI API** (`https://api.openai.com/`)
+* **What it is:** OpenAI's chat completions API, used here as a fallback when Gemini fails or as the primary if only an OpenAI key is configured.
+* **What is sent:** Same as Gemini above (recent messages + system prompt + administrator's OpenAI API key).
+* **When:** Same conditions as Gemini above.
+* **Terms and privacy:** [OpenAI Terms of Use](https://openai.com/policies/terms-of-use), [OpenAI API Data Usage Policies](https://openai.com/policies/api-data-usage-policies), [OpenAI Privacy Policy](https://openai.com/policies/privacy-policy).
+
+The AI bot is disabled by default and will not contact any external service unless the administrator explicitly enables it and provides an API key.
+
 == Installation ==
 
 1. Upload the `lobbychat` folder to `/wp-content/plugins/`, **or** install the zip via Plugins → Add New → Upload.
@@ -131,6 +164,10 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 
 == Changelog ==
 
+= 1.0.4 =
+* Compliance: "Powered by LobbyChat" frontend attribution is now opt-in (off by default) per WordPress.org guidelines on plugin attribution.
+* Compliance: Added detailed "External services" section to readme documenting all third-party API calls (Gemini, OpenAI, YouTube oEmbed, link preview fetches) with terms-of-service and privacy-policy links.
+
 = 1.0.3 =
 * Fixed: Link sharing now works for any URL — previously only worked when the linked page had perfectly-formatted Open Graph tags. Now handles Twitter cards, plain `<title>` tags, and falls back to a bare link card if no metadata is available.
 * Improved: Open Graph parser now handles meta tags with `content` before `property`, mixed quote styles, and follows redirects.
@@ -170,6 +207,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+WordPress.org compliance pass — opt-in branding + documented external services.
 
 = 1.0.3 =
 Fixes link sharing — now reliably renders link previews for any URL with a graceful fallback. Recommended upgrade.
