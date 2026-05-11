@@ -26,15 +26,15 @@ class LobbyChat_Shortcode {
 	public static function register() {
 		wp_register_style(
 			'lobbychat',
-			LBC_URL . 'assets/css/lobbychat.css',
+			LOBBYCHAT_URL . 'assets/css/lobbychat.css',
 			[],
-			LBC_VERSION
+			LOBBYCHAT_VERSION
 		);
 		wp_register_script(
 			'lobbychat',
-			LBC_URL . 'assets/js/lobbychat.js',
+			LOBBYCHAT_URL . 'assets/js/lobbychat.js',
 			[ 'jquery' ],
-			LBC_VERSION,
+			LOBBYCHAT_VERSION,
 			true
 		);
 
@@ -112,7 +112,7 @@ class LobbyChat_Shortcode {
 		wp_enqueue_script( 'lobbychat' );
 
 		ob_start();
-		include LBC_DIR . 'templates/lobbychat.php';
+		include LOBBYCHAT_DIR . 'templates/lobbychat.php';
 		return ob_get_clean();
 	}
 }

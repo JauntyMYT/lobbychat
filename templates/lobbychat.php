@@ -155,7 +155,7 @@ $lobbychat_is_mod       = $lobbychat_uid && (
 
 	<?php if ( $lobbychat_show_brand ) : ?>
 	<div class="lobbychat-branding">
-		<a href="<?php echo esc_url( LBC_DONATE_URL ); ?>" target="_blank" rel="noopener nofollow">
+		<a href="<?php echo esc_url( LOBBYCHAT_DONATE_URL ); ?>" target="_blank" rel="noopener nofollow">
 			<?php esc_html_e( 'Powered by LobbyChat', 'lobbychat' ); ?> <span aria-hidden="true">♥</span>
 		</a>
 	</div>

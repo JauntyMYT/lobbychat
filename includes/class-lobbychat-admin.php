@@ -14,13 +14,43 @@ class LobbyChat_Admin {
 	public static function init() {
 		add_action( 'admin_menu', [ __CLASS__, 'add_menu' ] );
 		add_action( 'admin_init', [ __CLASS__, 'register_settings' ] );
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_admin_assets' ] );
 		add_action( 'wp_ajax_lobbychat_bot_test', [ __CLASS__, 'ajax_test' ] );
-		add_filter( 'plugin_action_links_' . plugin_basename( LBC_FILE ), [ __CLASS__, 'plugin_action_links' ] );
+		add_filter( 'plugin_action_links_' . plugin_basename( LOBBYCHAT_FILE ), [ __CLASS__, 'plugin_action_links' ] );
+	}
+
+	/**
+	 * Page hook suffix for the bot settings page — populated by add_menu().
+	 * Used by enqueue_admin_assets() to load JS only on that page.
+	 */
+	private static $bot_page_hook = '';
+
+	/**
+	 * Enqueue admin JS only on the bot settings page.
+	 */
+	public static function enqueue_admin_assets( $hook ) {
+		if ( ! self::$bot_page_hook || $hook !== self::$bot_page_hook ) return;
+
+		wp_enqueue_script(
+			'lobbychat-admin',
+			LOBBYCHAT_URL . 'assets/js/admin.js',
+			[ 'jquery' ],
+			LOBBYCHAT_VERSION,
+			true
+		);
+
+		wp_localize_script( 'lobbychat-admin', 'lobbychatBotTest', [
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+			'nonce'        => wp_create_nonce( 'lobbychat_bot_test' ),
+			'calling'      => __( 'Calling AI…', 'lobbychat' ),
+			'posted'       => __( 'Posted:', 'lobbychat' ),
+			'unknownError' => __( 'Unknown error', 'lobbychat' ),
+		] );
 	}
 
 	public static function plugin_action_links( $links ) {
 		$settings = '<a href="' . esc_url( admin_url( 'options-general.php?page=lobbychat' ) ) . '">' . esc_html__( 'Settings', 'lobbychat' ) . '</a>';
-		$donate   = '<a href="' . esc_url( LBC_DONATE_URL ) . '" target="_blank" rel="noopener" style="color:#d63384">' . esc_html__( '♥ Donate', 'lobbychat' ) . '</a>';
+		$donate   = '<a href="' . esc_url( LOBBYCHAT_DONATE_URL ) . '" target="_blank" rel="noopener" style="color:#d63384">' . esc_html__( '♥ Donate', 'lobbychat' ) . '</a>';
 		array_unshift( $links, $settings );
 		$links[] = $donate;
 		return $links;
@@ -49,7 +79,7 @@ class LobbyChat_Admin {
 			'lobbychat',
 			[ __CLASS__, 'render_main_page' ]
 		);
-		add_options_page(
+		self::$bot_page_hook = add_options_page(
 			__( 'LobbyChat AI Bot', 'lobbychat' ),
 			'',
 			'manage_options',
@@ -265,7 +295,7 @@ class LobbyChat_Admin {
 				printf(
 					/* translators: %s: Wise donation link */
 					esc_html__( 'LobbyChat is free and developed in spare time. If it helps your community, you can %s — every bit is appreciated. ♥', 'lobbychat' ),
-					'<a href="' . esc_url( LBC_DONATE_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'support development', 'lobbychat' ) . '</a>'
+					'<a href="' . esc_url( LOBBYCHAT_DONATE_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'support development', 'lobbychat' ) . '</a>'
 				);
 				?>
 			</p>
@@ -385,27 +415,6 @@ class LobbyChat_Admin {
 				<p><?php esc_html_e( 'Force the bot to reply to recent chat messages (bypasses random chance).', 'lobbychat' ); ?></p>
 				<button type="button" class="button button-primary" id="lobbychat-bot-test-btn"><?php esc_html_e( 'Send Test Reply', 'lobbychat' ); ?></button>
 				<span id="lobbychat-bot-test-result" style="margin-left:12px"></span>
-				<script>
-				jQuery(function($){
-					$('#lobbychat-bot-test-btn').on('click', function(){
-						var $btn = $(this), $out = $('#lobbychat-bot-test-result');
-						$btn.prop('disabled', true);
-						$out.html('<span style="color:#888"><?php echo esc_js( __( 'Calling AI…', 'lobbychat' ) ); ?></span>');
-						$.post(ajaxurl, {
-							action: 'lobbychat_bot_test',
-							_ajax_nonce: '<?php echo esc_js( wp_create_nonce( 'lobbychat_bot_test' ) ); ?>'
-						}).done(function(r){
-							if (r.success) {
-								$out.html('<span style="color:#0a7d0a">✓ <?php echo esc_js( __( 'Posted:', 'lobbychat' ) ); ?> "' + r.data.reply + '"</span>');
-							} else {
-								$out.html('<span style="color:#c00">✗ ' + (r.data && r.data.error ? r.data.error : '<?php echo esc_js( __( 'Unknown error', 'lobbychat' ) ); ?>') + '</span>');
-							}
-						}).fail(function(xhr){
-							$out.html('<span style="color:#c00">✗ HTTP ' + xhr.status + '</span>');
-						}).always(function(){ $btn.prop('disabled', false); });
-					});
-				});
-				</script>
 			</div>
 
 			<form method="post" action="options.php">

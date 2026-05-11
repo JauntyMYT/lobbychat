@@ -3,7 +3,7 @@
  * Plugin Name:       LobbyChat
  * Plugin URI:        https://bejaunty.com/plugins/lobbychat
  * Description:       A live, casual shoutbox for your community. Real-time messages, emoji reactions, link previews, moderator tools, and an optional AI chat companion. No third-party dependencies.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Requires at least: 5.8
  * Requires PHP:      7.2
  * Author:            Asad Khalil
@@ -20,18 +20,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LBC_VERSION', '1.0.4' );
-define( 'LBC_FILE',    __FILE__ );
-define( 'LBC_DIR',     plugin_dir_path( __FILE__ ) );
-define( 'LBC_URL',     plugin_dir_url( __FILE__ ) );
-define( 'LBC_DONATE_URL', 'https://wise.com/pay/me/asadk372' );
+define( 'LOBBYCHAT_VERSION', '1.0.5' );
+define( 'LOBBYCHAT_FILE',    __FILE__ );
+define( 'LOBBYCHAT_DIR',     plugin_dir_path( __FILE__ ) );
+define( 'LOBBYCHAT_URL',     plugin_dir_url( __FILE__ ) );
+define( 'LOBBYCHAT_DONATE_URL', 'https://wise.com/pay/me/asadk372' );
 
-require_once LBC_DIR . 'includes/class-lobbychat-db.php';
-require_once LBC_DIR . 'includes/class-lobbychat-ajax.php';
-require_once LBC_DIR . 'includes/class-lobbychat-shortcode.php';
-require_once LBC_DIR . 'includes/class-lobbychat-bot.php';
+require_once LOBBYCHAT_DIR . 'includes/class-lobbychat-db.php';
+require_once LOBBYCHAT_DIR . 'includes/class-lobbychat-ajax.php';
+require_once LOBBYCHAT_DIR . 'includes/class-lobbychat-shortcode.php';
+require_once LOBBYCHAT_DIR . 'includes/class-lobbychat-bot.php';
 if ( is_admin() ) {
-	require_once LBC_DIR . 'includes/class-lobbychat-admin.php';
+	require_once LOBBYCHAT_DIR . 'includes/class-lobbychat-admin.php';
 }
 
 /* ─── Activation ─────────────────────────────────────────────────── */

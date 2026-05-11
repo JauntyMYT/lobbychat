@@ -4,7 +4,7 @@ Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,6 +164,10 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 
 == Changelog ==
 
+= 1.0.5 =
+* Compliance: Moved inline admin JavaScript to a properly enqueued file (`assets/js/admin.js`) loaded only on the bot settings page via `admin_enqueue_scripts`, per WordPress.org coding standards.
+* Compliance: Renamed all plugin-defined constants from the 3-character `LBC_*` prefix to `LOBBYCHAT_*` to meet the 4+ character prefix requirement.
+
 = 1.0.4 =
 * Compliance: "Powered by LobbyChat" frontend attribution is now opt-in (off by default) per WordPress.org guidelines on plugin attribution.
 * Compliance: Added detailed "External services" section to readme documenting all third-party API calls (Gemini, OpenAI, YouTube oEmbed, link preview fetches) with terms-of-service and privacy-policy links.
@@ -207,6 +211,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+WordPress.org compliance — proper script enqueue + longer constant prefix.
 
 = 1.0.4 =
 WordPress.org compliance pass — opt-in branding + documented external services.
