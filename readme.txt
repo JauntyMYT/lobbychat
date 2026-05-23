@@ -2,9 +2,9 @@
 Contributors: jauntymellifluous
 Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,6 +164,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 
 == Changelog ==
 
+= 1.0.7 =
+* Updated: "Tested up to" bumped to WordPress 7.0.
+
 = 1.0.6 =
 * Updated: Plugin URI now points to the GitHub source repository (`github.com/JauntyMYT/lobbychat`) for a more stable canonical URL.
 
@@ -214,6 +217,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.0.7 =
+Confirmed compatible with WordPress 7.0.
 
 = 1.0.6 =
 Minor: Plugin URI updated to GitHub source repository.

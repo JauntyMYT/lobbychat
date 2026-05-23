@@ -3,7 +3,7 @@
  * Plugin Name:       LobbyChat
  * Plugin URI:        https://github.com/JauntyMYT/lobbychat
  * Description:       A live, casual shoutbox for your community. Real-time messages, emoji reactions, link previews, moderator tools, and an optional AI chat companion. No third-party dependencies.
- * Version:           1.0.6
+ * Version:           1.0.7
  * Requires at least: 5.8
  * Requires PHP:      7.2
  * Author:            Asad Khalil
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LOBBYCHAT_VERSION', '1.0.6' );
+define( 'LOBBYCHAT_VERSION', '1.0.7' );
 define( 'LOBBYCHAT_FILE',    __FILE__ );
 define( 'LOBBYCHAT_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'LOBBYCHAT_URL',     plugin_dir_url( __FILE__ ) );
