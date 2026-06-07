@@ -148,16 +148,34 @@ class LobbyChat_Ajax {
     private static function format_message( $row ) {
         $uid      = (int) $row->user_id;
         $is_guest = $uid === 0;
+        // Raw display name — DO NOT html-escape here.
+        // JSON output gets HTML-escaped by the JS client at render time
+        // (lobbychat.js escapeHtml). Escaping here would double-encode
+        // characters like ' into &#039; and they'd render literally.
         $name     = $is_guest
-            ? esc_html( $row->guest_name ?: __( 'Guest', 'lobbychat' ) )
-            : esc_html( $row->display_name ?: __( 'User', 'lobbychat' ) );
+            ? ( $row->guest_name ?: __( 'Guest', 'lobbychat' ) )
+            : ( $row->display_name ?: __( 'User', 'lobbychat' ) );
 
         $avatar    = $is_guest ? '' : get_avatar_url( $uid, [ 'size' => 32, 'default' => 'identicon' ] );
         $reactions = $row->reactions    ? json_decode( $row->reactions,    true ) : [];
         $preview   = $row->link_preview ? json_decode( $row->link_preview, true ) : null;
 
-        // Profile URL — defaults to WP author archive; filterable so themes can override.
-        $profile_url = $is_guest ? '' : apply_filters( 'lobbychat_profile_url', get_author_posts_url( $uid ), $uid );
+        // Build the default profile URL — but only return one if the user
+        // actually has a usable author archive. Sites without published posts
+        // for this user (or with author archives disabled by the theme) would
+        // otherwise serve a 404. Returning empty makes the JS render plain text.
+        //
+        // Themes or other plugins can override this entirely via the
+        // 'lobbychat_profile_url' filter — for example to point at a custom
+        // profile page like /profile/{username}.
+        $default_profile_url = '';
+        if ( ! $is_guest ) {
+            $user_post_count = (int) count_user_posts( $uid, 'post', true );
+            if ( $user_post_count > 0 ) {
+                $default_profile_url = get_author_posts_url( $uid );
+            }
+        }
+        $profile_url = $is_guest ? '' : apply_filters( 'lobbychat_profile_url', $default_profile_url, $uid );
 
         return [
             'id'          => (int) $row->id,
@@ -166,9 +184,9 @@ class LobbyChat_Ajax {
             'is_guest'    => $is_guest,
             'user_id'     => $uid,
             'profile_url' => $profile_url,
-            'message'     => esc_html( $row->message ),
+            'message'     => (string) $row->message, // Raw — JS escapes at render time.
             'is_pinned'   => (bool) $row->is_pinned,
-            'link_url'    => esc_url( $row->link_url ?? '' ),
+            'link_url'    => esc_url_raw( $row->link_url ?? '' ),
             'preview'     => $preview,
             'reactions'   => $reactions,
             'time_ago'    => self::time_ago( $row->created_at ),

@@ -4,7 +4,7 @@ Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -155,6 +155,17 @@ Yes — every color is set via CSS custom properties (`--lobbychat-accent`, `--l
 
 Yes, the layout is fully responsive and supports fullscreen mode.
 
+= Where do clickable usernames link to? Can I point them at a custom profile page? =
+
+By default usernames link to the WordPress author archive — but only if that user has published a post (otherwise the link is omitted to avoid 404s).
+
+To send clicks to a different URL (e.g. a BuddyPress profile, a custom `/profile/{username}` page from your community plugin, or anywhere else), use the `lobbychat_profile_url` filter in your theme's `functions.php`:
+
+`add_filter( 'lobbychat_profile_url', function( $url, $user_id ) {`
+`    $user = get_userdata( $user_id );`
+`    return $user ? home_url( '/profile/' . $user->user_login ) : $url;`
+`}, 10, 2 );`
+
 == Screenshots ==
 
 1. Live chat feed with reactions and link previews.
@@ -163,6 +174,10 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 4. AI bot configuration with built-in setup guide.
 
 == Changelog ==
+
+= 1.0.8 =
+* Fixed: Apostrophes and other special characters were rendered as HTML entities (`I&#039;m going` instead of `I'm going`) in chat messages and display names. Server no longer double-encodes payload fields that the JS client already escapes at render time. Thanks to @david-innes for the report.
+* Fixed: Clickable usernames could 404 on sites where users hadn't published any posts or where author archives are disabled. Default username link is now only added when the user has a usable author archive — otherwise the name is shown as plain text. Use the `lobbychat_profile_url` filter to point at custom profile URLs (see FAQ).
 
 = 1.0.7 =
 * Updated: "Tested up to" bumped to WordPress 7.0.
@@ -217,6 +232,9 @@ Yes, the layout is fully responsive and supports fullscreen mode.
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.0.8 =
+Two bug fixes: apostrophes/special characters now display correctly; clickable usernames no longer 404 on sites without author archives. Recommended upgrade.
 
 = 1.0.7 =
 Confirmed compatible with WordPress 7.0.
