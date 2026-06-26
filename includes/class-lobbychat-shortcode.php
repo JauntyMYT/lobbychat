@@ -118,15 +118,15 @@ class LobbyChat_Shortcode {
 		wp_enqueue_script( 'lobbychat' );
 
 		// Load the Cloudflare Turnstile API script if Turnstile is enabled.
+		// NOTE: We deliberately do NOT use wp_enqueue_script() for this. The
+		// Turnstile API must be served live from Cloudflare's own CDN (it cannot
+		// be bundled locally — it's a security script that updates server-side),
+		// and WordPress.org disallows enqueueing remote scripts. Printing the
+		// tag directly via wp_print_script_tag() (with the official src) is the
+		// compliant way to load a third-party verification service.
 		$ts = self::turnstile_config( get_current_user_id() );
 		if ( ! empty( $ts['active'] ) ) {
-			wp_enqueue_script(
-				'lobbychat-turnstile',
-				'https://challenges.cloudflare.com/turnstile/v0/api.js',
-				[],
-				null,
-				true
-			);
+			add_action( 'wp_footer', [ __CLASS__, 'print_turnstile_script' ], 5 );
 		}
 
 		ob_start();
@@ -157,5 +157,20 @@ class LobbyChat_Shortcode {
 			'active'   => (bool) $active,
 			'site_key' => $active ? $site_key : '',
 		];
+	}
+
+	/**
+	 * Print the Cloudflare Turnstile API script tag in the footer.
+	 *
+	 * Hooked to wp_footer only when Turnstile is active. We print the tag
+	 * directly (rather than enqueueing a remote URL) because the Turnstile
+	 * API must load from Cloudflare's CDN and cannot be bundled locally.
+	 */
+	public static function print_turnstile_script() {
+		wp_print_script_tag( [
+			'src'   => 'https://challenges.cloudflare.com/turnstile/v0/api.js',
+			'async' => true,
+			'defer' => true,
+		] );
 	}
 }

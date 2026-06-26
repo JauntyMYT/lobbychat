@@ -4,7 +4,7 @@ Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -188,6 +188,10 @@ To send clicks to a different URL (e.g. a BuddyPress profile, a custom `/profile
 
 == Changelog ==
 
+= 1.2.2 =
+* Compliance: Cloudflare Turnstile's API script is now printed directly instead of enqueued, to satisfy WordPress.org's rule against enqueueing remote scripts. No functional change — Turnstile works exactly as before.
+* Housekeeping: cleaned up a couple of Plugin Check warnings (script versioning and a cross-method nonce annotation).
+
 = 1.2.1 =
 * Fixed: Clicking an emoji in the picker did nothing on sites where WordPress replaces emoji with images (Twemoji). The real emoji character is now stored on each button and inserted reliably regardless of how the glyph is displayed.
 
@@ -259,6 +263,9 @@ To send clicks to a different URL (e.g. a BuddyPress profile, a custom `/profile
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.2.2 =
+Minor compliance and code-quality fixes. Recommended for anyone using Turnstile.
 
 = 1.2.1 =
 Fixes emoji picker insertion on sites that use Twemoji emoji images.

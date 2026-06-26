@@ -278,10 +278,12 @@ class LobbyChat_Ajax {
             return true;
         }
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce already checked in caller
-        $token = isset( $_POST['cf_turnstile_response'] )
-            ? sanitize_text_field( wp_unslash( $_POST['cf_turnstile_response'] ) )
-            : '';
+        // The caller (lobbychat_send) has already run check_nonce(), so this
+        // request is nonce-verified. Plugin Check can't trace that across
+        // methods, hence the scoped disable below.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+        $token = isset( $_POST['cf_turnstile_response'] ) ? sanitize_text_field( wp_unslash( $_POST['cf_turnstile_response'] ) ) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
         if ( $token === '' ) {
             return __( 'Please complete the spam check before posting.', 'lobbychat' );
         }
