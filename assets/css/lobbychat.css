@@ -369,21 +369,30 @@
 /* ── MOD ACTIONS ───────────────────────────────────────── */
 .lobbychat-msg-actions {
     display: none;
-    gap: 6px;
-    margin-top: 4px;
+    gap: 2px;
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    z-index: 5;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    padding: 3px 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 
 .lobbychat-msg:hover .lobbychat-msg-actions { display: flex; }
 
 .lobbychat-action-sm {
-    font-size: 10px;
+    font-size: 11px;
     background: none;
     border: none;
     cursor: pointer;
     color: var(--lobbychat-muted);
-    padding: 1px 5px;
+    padding: 2px 6px;
     border-radius: 4px;
     transition: all .15s;
+    white-space: nowrap;
 }
 
 .lobbychat-action-sm:hover { background: #f3f4f6; color: var(--lobbychat-text); }
@@ -491,6 +500,54 @@
 
 .lobbychat-send-btn:hover { background: #a93226; }
 .lobbychat-send-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── TURNSTILE ─────────────────────────────────────────── */
+.lobbychat-turnstile:not(:empty) {
+    margin: 8px 0;
+}
+
+/* ── EMOJI PICKER ──────────────────────────────────────── */.lobbychat-emoji-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 8px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    max-height: 168px;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.lobbychat-emoji-item {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 20px;
+    line-height: 1;
+    padding: 5px;
+    cursor: pointer;
+    transition: background .12s, transform .12s;
+}
+.lobbychat-emoji-item:hover {
+    background: #f3f4f6;
+    transform: scale(1.18);
+}
+
+/* ── CLEAR-CHAT (moderator) ────────────────────────────── */
+.lobbychat-clear-btn:hover {
+    background: #fee2e2;
+    color: var(--lobbychat-accent);
+}
+.lobbychat-clear-btn.lobbychat-clear-armed {
+    background: var(--lobbychat-accent);
+    color: #fff;
+    animation: lobbychat-pulse .9s ease-in-out infinite;
+}
+@keyframes lobbychat-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .6; }
+}
 
 /* ── COLLAPSED STATE ───────────────────────────────────── */
 .lobbychat-wrap.lobbychat-collapsed .lobbychat-body,

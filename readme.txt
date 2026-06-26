@@ -4,7 +4,7 @@ Tags: shoutbox, chat, live chat, community, comments
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.0.8
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,6 +79,7 @@ LobbyChat exposes several filters and actions for theme/plugin developers:
 * `lobbychat_profile_url` — filter, override the URL linked from a username (default: WP author archive)
 * `lobbychat_allowed_reactions` — filter, override the array of allowed reaction emoji
 * `lobbychat_report_threshold` — filter, change the auto-hide report threshold (default: 5)
+* `lobbychat_emoji_set` — filter, customize the array of emoji shown in the picker
 
 == External services ==
 
@@ -112,6 +113,18 @@ When the AI bot is explicitly enabled by the administrator (Settings → LobbyCh
 * **Terms and privacy:** [OpenAI Terms of Use](https://openai.com/policies/terms-of-use), [OpenAI API Data Usage Policies](https://openai.com/policies/api-data-usage-policies), [OpenAI Privacy Policy](https://openai.com/policies/privacy-policy).
 
 The AI bot is disabled by default and will not contact any external service unless the administrator explicitly enables it and provides an API key.
+
+= 3. Optional Cloudflare Turnstile spam protection =
+
+When Turnstile is explicitly enabled by the administrator (Settings → LobbyChat → Spam protection, **off by default**) and a site key and secret key are provided, the plugin uses Cloudflare's Turnstile service to verify that the person posting is not a bot.
+
+**Cloudflare Turnstile** (`https://challenges.cloudflare.com/`)
+* **What it is:** Cloudflare's privacy-focused CAPTCHA alternative, used here to block automated spam before a message is posted.
+* **What is sent:** When a user submits a message, the Turnstile token generated in their browser plus the user's IP address are sent from your server to Cloudflare's `siteverify` endpoint, along with your secret key, to confirm the token is valid. The browser-side widget also loads Cloudflare's `api.js` script from `challenges.cloudflare.com`.
+* **When:** Only when Turnstile is enabled and a user attempts to post a message (optionally limited to guests only).
+* **Terms and privacy:** [Cloudflare Website Terms of Use](https://www.cloudflare.com/website-terms/), [Cloudflare Privacy Policy](https://www.cloudflare.com/privacypolicy/).
+
+Turnstile is disabled by default and will not contact any external service unless the administrator explicitly enables it and provides their own keys.
 
 == Installation ==
 
@@ -175,6 +188,20 @@ To send clicks to a different URL (e.g. a BuddyPress profile, a custom `/profile
 
 == Changelog ==
 
+= 1.2.1 =
+* Fixed: Clicking an emoji in the picker did nothing on sites where WordPress replaces emoji with images (Twemoji). The real emoji character is now stored on each button and inserted reliably regardless of how the glyph is displayed.
+
+= 1.2.0 =
+* New: Optional Cloudflare Turnstile integration for bot protection. Enable it under Settings → LobbyChat → Spam protection, paste your free site/secret keys, and choose whether to require it for everyone or guests only. Posting is blocked until the check passes.
+* Improved: Emoji picker is more reliable — fixed an issue where clicking the 😊 button or an emoji did nothing on some setups.
+* Improved: The moderator "clear chat" action no longer uses a browser confirm() popup. Instead the 🧹 button arms on first click (turns red, shows ✓) and clears on a second click within 3 seconds.
+* Improved: Hover actions (Delete / Pin / Report) now float in the top-right corner of a message instead of pushing the message taller, so row heights no longer jump on hover.
+
+= 1.1.0 =
+* New: Emoji picker — users can insert emoji into their messages via a 😊 button next to the message box. The emoji set is filterable with `lobbychat_emoji_set`.
+* New: Moderators can instantly clear all chat messages with a 🧹 button in the chat header — useful for sites that run multiple separate sessions (pinned messages are kept). 
+* Fixed: Auto-delete (message retention) now also runs opportunistically when the chat is loaded, throttled to once per hour. Previously, on very low-traffic sites — for example a chat only enabled during a weekly event — WordPress cron might never fire and old messages would linger past their retention window. Thanks to @david-innes for the report.
+
 = 1.0.8 =
 * Fixed: Apostrophes and other special characters were rendered as HTML entities (`I&#039;m going` instead of `I'm going`) in chat messages and display names. Server no longer double-encodes payload fields that the JS client already escapes at render time. Thanks to @david-innes for the report.
 * Fixed: Clickable usernames could 404 on sites where users hadn't published any posts or where author archives are disabled. Default username link is now only added when the user has a usable author archive — otherwise the name is shown as plain text. Use the `lobbychat_profile_url` filter to point at custom profile URLs (see FAQ).
@@ -232,6 +259,15 @@ To send clicks to a different URL (e.g. a BuddyPress profile, a custom `/profile
 * Fullscreen mode, collapse toggle, sound notifications.
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Fixes emoji picker insertion on sites that use Twemoji emoji images.
+
+= 1.2.0 =
+Adds optional Cloudflare Turnstile bot protection, fixes the emoji picker, and smooths out moderator controls.
+
+= 1.1.0 =
+New emoji picker and moderator "clear chat" button, plus a fix so message auto-delete works reliably on low-traffic sites.
 
 = 1.0.8 =
 Two bug fixes: apostrophes/special characters now display correctly; clickable usernames no longer 404 on sites without author archives. Recommended upgrade.

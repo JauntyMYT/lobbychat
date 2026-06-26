@@ -101,6 +101,10 @@ class LobbyChat_Admin {
 			'lobbychat_prune_days'    => 'absint',
 			'lobbychat_show_branding' => 'absint',
 			'lobbychat_blocklist'     => 'sanitize_textarea_field',
+			'lobbychat_turnstile_enabled'    => 'absint',
+			'lobbychat_turnstile_site_key'   => [ __CLASS__, 'sanitize_api_key' ],
+			'lobbychat_turnstile_secret_key' => [ __CLASS__, 'sanitize_api_key' ],
+			'lobbychat_turnstile_guests_only' => 'absint',
 		];
 		foreach ( $main as $key => $cb ) {
 			register_setting( 'lobbychat_main', $key, [ 'sanitize_callback' => $cb ] );
@@ -154,6 +158,10 @@ class LobbyChat_Admin {
 		$prune_days    = (int) get_option( 'lobbychat_prune_days', 30 );
 		$show_branding = (int) get_option( 'lobbychat_show_branding', 0 );
 		$blocklist     = (string) get_option( 'lobbychat_blocklist', '' );
+		$ts_enabled     = (int) get_option( 'lobbychat_turnstile_enabled', 0 );
+		$ts_site_key    = (string) get_option( 'lobbychat_turnstile_site_key', '' );
+		$ts_secret_key  = (string) get_option( 'lobbychat_turnstile_secret_key', '' );
+		$ts_guests_only = (int) get_option( 'lobbychat_turnstile_guests_only', 1 );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'LobbyChat Settings', 'lobbychat' ); ?></h1>
@@ -243,6 +251,9 @@ class LobbyChat_Admin {
 						<td>
 							<input type="number" name="lobbychat_prune_days" id="lobbychat_prune_days"
 								   value="<?php echo esc_attr( $prune_days ); ?>" min="0" max="3650" style="width:100px"> <?php esc_html_e( 'days (0 = never)', 'lobbychat' ); ?>
+							<p class="description">
+								<?php esc_html_e( 'Messages older than this are removed automatically. Cleanup runs daily and also opportunistically when the chat is loaded, so it works even on low-traffic sites. Pinned messages are never auto-deleted. To wipe the chat instantly (e.g. between sessions), moderators can use the 🧹 button in the chat header.', 'lobbychat' ); ?>
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -282,6 +293,54 @@ class LobbyChat_Admin {
 							<p class="description">
 								<?php esc_html_e( 'Administrators are automatic moderators. Mods can pin messages and delete any message; regular users can only delete their own within 60 seconds.', 'lobbychat' ); ?>
 							</p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Spam protection — Cloudflare Turnstile', 'lobbychat' ); ?></h2>
+				<table class="form-table">
+					<tr>
+						<th><label for="lobbychat_turnstile_enabled"><?php esc_html_e( 'Enable Turnstile', 'lobbychat' ); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" name="lobbychat_turnstile_enabled" id="lobbychat_turnstile_enabled" value="1" <?php checked( $ts_enabled, 1 ); ?>>
+								<?php esc_html_e( 'Require a Cloudflare Turnstile check before posting (free bot protection)', 'lobbychat' ); ?>
+							</label>
+							<p class="description">
+								<?php
+								printf(
+									/* translators: %s: Cloudflare Turnstile dashboard link */
+									esc_html__( 'Get a free site key and secret key at %s. Add your site domain there when creating the widget.', 'lobbychat' ),
+									'<a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener">dash.cloudflare.com → Turnstile</a>'
+								);
+								?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="lobbychat_turnstile_site_key"><?php esc_html_e( 'Site Key', 'lobbychat' ); ?></label></th>
+						<td>
+							<input type="text" name="lobbychat_turnstile_site_key" id="lobbychat_turnstile_site_key"
+								   value="<?php echo esc_attr( $ts_site_key ); ?>" class="regular-text" autocomplete="off" spellcheck="false">
+							<p class="description"><?php esc_html_e( 'Public key — shown in the page. Safe to expose.', 'lobbychat' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="lobbychat_turnstile_secret_key"><?php esc_html_e( 'Secret Key', 'lobbychat' ); ?></label></th>
+						<td>
+							<input type="password" name="lobbychat_turnstile_secret_key" id="lobbychat_turnstile_secret_key"
+								   value="<?php echo esc_attr( $ts_secret_key ); ?>" class="regular-text" autocomplete="off" spellcheck="false">
+							<p class="description"><?php esc_html_e( 'Private key — kept on the server, never shown to visitors.', 'lobbychat' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="lobbychat_turnstile_guests_only"><?php esc_html_e( 'Who must verify', 'lobbychat' ); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" name="lobbychat_turnstile_guests_only" id="lobbychat_turnstile_guests_only" value="1" <?php checked( $ts_guests_only, 1 ); ?>>
+								<?php esc_html_e( 'Only require Turnstile for guests (logged-in users skip it)', 'lobbychat' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Recommended: bots almost always post as guests, and logged-in members get a smoother experience.', 'lobbychat' ); ?></p>
 						</td>
 					</tr>
 				</table>

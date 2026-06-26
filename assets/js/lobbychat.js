@@ -26,6 +26,7 @@
 		activePicker: null,
 		linkMode:   false,
 		lastSent:   0,
+		tsWidgetId: null,
 		// client-side cooldown — slightly longer than server rate so the button stays disabled until safe
 		cooldown:   ( ( LobbyChat.user_id ? 5 : 15 ) * 1000 ) + 500,
 		_lastPing:  0,
@@ -308,6 +309,18 @@
 		const now = Date.now();
 		if ( App.lastSent > 0 && ( now - App.lastSent ) < App.cooldown ) { return; }
 
+		// Turnstile: if active, require a token before sending.
+		var tsToken = '';
+		if ( LobbyChat.turnstile && LobbyChat.turnstile.active ) {
+			tsToken = ( window.turnstile && App.tsWidgetId !== undefined && App.tsWidgetId !== null )
+				? window.turnstile.getResponse( App.tsWidgetId )
+				: '';
+			if ( ! tsToken ) {
+				toast( I18N.turnstile_wait || 'Please complete the spam check first.' );
+				return;
+			}
+		}
+
 		const sendLabel = I18N.send || 'Send';
 		const $btn = $('#lobbychat-send-btn').prop( 'disabled', true ).text( 'Sending…' );
 		App.lastSent = Date.now();
@@ -315,8 +328,13 @@
 		ajax( 'lobbychat_send', {
 			message:    message,
 			guest_name: guestName,
-			link_url:   linkUrl
+			link_url:   linkUrl,
+			cf_turnstile_response: tsToken
 		}).done( function ( resp ) {
+			// Reset Turnstile so the next message gets a fresh token.
+			if ( LobbyChat.turnstile && LobbyChat.turnstile.active && window.turnstile && App.tsWidgetId !== undefined && App.tsWidgetId !== null ) {
+				try { window.turnstile.reset( App.tsWidgetId ); } catch ( e ) {}
+			}
 			if ( ! resp.success ) {
 				toast( resp.data ? resp.data.message : 'Error sending message.' );
 				App.lastSent = 0;
@@ -492,6 +510,28 @@
 		loadMessages();
 		bindActions( $(document) );
 
+		// Render Cloudflare Turnstile widget if active. The API script may load
+		// after us, so poll briefly until window.turnstile is available.
+		if ( LobbyChat.turnstile && LobbyChat.turnstile.active && LobbyChat.turnstile.site_key ) {
+			var tsTries = 0;
+			var tsContainer = document.getElementById('lobbychat-turnstile');
+			var tsInterval = setInterval( function () {
+				tsTries++;
+				if ( window.turnstile && tsContainer ) {
+					clearInterval( tsInterval );
+					try {
+						App.tsWidgetId = window.turnstile.render( tsContainer, {
+							sitekey: LobbyChat.turnstile.site_key,
+							theme: 'auto',
+							size: 'flexible'
+						});
+					} catch ( e ) {}
+				} else if ( tsTries > 40 ) { // ~10s
+					clearInterval( tsInterval );
+				}
+			}, 250 );
+		}
+
 		const sendLabel = I18N.send || 'Send';
 
 		// Send: use event delegation on document so the binding survives any DOM rewrite.
@@ -581,6 +621,100 @@
 		// Link mode
 		$('#lobbychat-link-btn').on( 'click', function () { toggleLinkMode(); } );
 		$('#lobbychat-link-clear').on( 'click', function () { toggleLinkMode( false ); } );
+
+		// Emoji picker toggle. Use a namespaced document handler and check the
+		// target directly to avoid stopPropagation races with the outside-click
+		// closer below.
+		$(document).on( 'click.lobbychatEmoji', function ( e ) {
+			var $btn  = $(e.target).closest('#lobbychat-emoji-btn');
+			var $item = $(e.target).closest('.lobbychat-emoji-item');
+			var $panel = $('#lobbychat-emoji-panel');
+
+			if ( $btn.length ) {
+				// Toggle the panel.
+				var willShow = $panel.is(':hidden');
+				$panel.toggle( willShow );
+				$('#lobbychat-emoji-btn').attr( 'aria-expanded', willShow ? 'true' : 'false' );
+				return;
+			}
+
+			if ( $item.length ) {
+				// Insert the emoji at the cursor. Prefer the data-emoji attribute
+				// (always the real character), then fall back to text content, then
+				// to an emoji <img> alt — WordPress/Jetpack/Cloudflare can replace
+				// emoji characters with <img class="emoji" alt="😀"> for display,
+				// which leaves the button with no textContent.
+				var emoji = $item.attr('data-emoji') || '';
+				if ( ! emoji ) { emoji = $.trim( $item.text() ); }
+				if ( ! emoji ) {
+					var $img = $item.find('img.emoji, img');
+					if ( $img.length ) { emoji = $img.attr('alt') || ''; }
+				}
+				if ( ! emoji ) { return; }
+				var input = document.getElementById('lobbychat-message');
+				if ( input ) {
+					var start = ( typeof input.selectionStart === 'number' ) ? input.selectionStart : input.value.length;
+					var end   = ( typeof input.selectionEnd === 'number' )   ? input.selectionEnd   : input.value.length;
+					input.value = input.value.slice( 0, start ) + emoji + input.value.slice( end );
+					var pos = start + emoji.length;
+					try { input.setSelectionRange( pos, pos ); } catch ( err ) {}
+					input.focus();
+					$(input).trigger('input');
+				}
+				return; // keep the panel open so multiple emoji can be added
+			}
+
+			// Clicked anywhere else → close the panel if open.
+			if ( ! $panel.is(':hidden') ) {
+				$panel.hide();
+				$('#lobbychat-emoji-btn').attr( 'aria-expanded', 'false' );
+			}
+		});
+
+		// Clear all messages (moderator only).
+		// Two-click inline confirm instead of a blocking window.confirm() popup:
+		// first click arms the button (turns red, shows ✓), second click within
+		// 3 seconds performs the clear. Clicking away / waiting resets it.
+		var clearArmed = false;
+		var clearTimer = null;
+		function disarmClear() {
+			clearArmed = false;
+			if ( clearTimer ) { clearTimeout( clearTimer ); clearTimer = null; }
+			$('#lobbychat-clear-btn')
+				.removeClass('lobbychat-clear-armed')
+				.text('🧹')
+				.attr('title', I18N.clear_title || 'Clear all messages (moderator)');
+		}
+		$(document).on( 'click', '#lobbychat-clear-btn', function () {
+			var $btn = $(this);
+
+			if ( ! clearArmed ) {
+				// First click — arm it.
+				clearArmed = true;
+				$btn.addClass('lobbychat-clear-armed')
+					.text('✓')
+					.attr('title', I18N.clear_confirm_short || 'Click again to clear all messages');
+				clearTimer = setTimeout( disarmClear, 3000 );
+				return;
+			}
+
+			// Second click — do it.
+			disarmClear();
+			$btn.prop('disabled', true);
+			ajax( 'lobbychat_clear', {} ).done( function ( resp ) {
+				if ( resp.success ) {
+					App.sinceId = 0;
+					$('#lobbychat-feed').empty();
+					$('#lobbychat-pinned').hide();
+					loadMessages();
+					toast( I18N.cleared || 'Chat cleared.' );
+				} else {
+					toast( ( resp.data && resp.data.message ) ? resp.data.message : 'Could not clear chat.' );
+				}
+			}).always( function () {
+				$btn.prop('disabled', false);
+			});
+		});
 
 		// Scroll detection
 		$('#lobbychat-feed').on( 'scroll', function () {

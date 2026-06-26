@@ -48,6 +48,9 @@ $lobbychat_is_mod       = $lobbychat_uid && (
 				   title="<?php esc_attr_e( 'Login', 'lobbychat' ); ?>">👤</a>
 			<?php endif; ?>
 			<button type="button" class="lobbychat-icon-btn" id="lobbychat-sound-btn" title="<?php esc_attr_e( 'Toggle sound', 'lobbychat' ); ?>">🔔</button>
+			<?php if ( $lobbychat_is_mod ) : ?>
+				<button type="button" class="lobbychat-icon-btn lobbychat-clear-btn" id="lobbychat-clear-btn" title="<?php esc_attr_e( 'Clear all messages (moderator)', 'lobbychat' ); ?>">🧹</button>
+			<?php endif; ?>
 			<button type="button" class="lobbychat-icon-btn" id="lobbychat-fs-btn" title="<?php esc_attr_e( 'Fullscreen', 'lobbychat' ); ?>">⛶</button>
 			<button type="button" class="lobbychat-icon-btn" id="lobbychat-toggle-btn" title="<?php esc_attr_e( 'Collapse', 'lobbychat' ); ?>">▲</button>
 		</div>
@@ -117,14 +120,35 @@ $lobbychat_is_mod       = $lobbychat_uid && (
 		</div>
 		<?php endif; ?>
 
+		<!-- Cloudflare Turnstile (rendered by JS when enabled) -->
+		<div class="lobbychat-turnstile" id="lobbychat-turnstile"></div>
+
 		<!-- Action buttons -->
 		<div class="lobbychat-actions">
 			<div class="lobbychat-actions-left">
+				<button type="button" class="lobbychat-action-btn" id="lobbychat-emoji-btn" title="<?php esc_attr_e( 'Insert emoji', 'lobbychat' ); ?>" aria-haspopup="true" aria-expanded="false">😊</button>
 				<?php if ( $lobbychat_logged_in && $lobbychat_allow_links ) : ?>
 					<button type="button" class="lobbychat-action-btn" id="lobbychat-link-btn" title="<?php esc_attr_e( 'Share a link', 'lobbychat' ); ?>">🔗</button>
 				<?php endif; ?>
 			</div>
 			<button type="button" class="lobbychat-send-btn" id="lobbychat-send-btn"><?php esc_html_e( 'Send', 'lobbychat' ); ?></button>
+		</div>
+
+		<!-- Emoji picker panel -->
+		<div class="lobbychat-emoji-panel" id="lobbychat-emoji-panel" style="display:none" role="menu" aria-label="<?php esc_attr_e( 'Emoji picker', 'lobbychat' ); ?>">
+			<?php
+			$lobbychat_emojis = apply_filters( 'lobbychat_emoji_set', [
+				'😀','😁','😂','🤣','😊','😍','😎','😘','🥳','🤩',
+				'🙂','😉','😇','🙃','😋','😜','🤔','🤨','😐','😴',
+				'😢','😭','😡','😱','😳','🥺','😬','🙄','😏','😤',
+				'👍','👎','👏','🙌','🙏','💪','🤝','👋','✌️','🤞',
+				'❤️','🔥','⭐','✨','🎉','🎊','💯','✅','❌','❓',
+				'🎮','🕹️','🏆','⚽','🏀','🎯','🎲','🍕','☕','🍻',
+			] );
+			foreach ( $lobbychat_emojis as $lobbychat_emoji ) {
+				echo '<button type="button" class="lobbychat-emoji-item" tabindex="-1" data-emoji="' . esc_attr( $lobbychat_emoji ) . '">' . esc_html( $lobbychat_emoji ) . '</button>';
+			}
+			?>
 		</div>
 
 		<?php endif; ?>

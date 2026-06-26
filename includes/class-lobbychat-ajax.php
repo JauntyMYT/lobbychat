@@ -10,7 +10,7 @@ class LobbyChat_Ajax {
         $actions = [
             'lobbychat_get', 'lobbychat_ping', 'lobbychat_send',
             'lobbychat_react', 'lobbychat_report', 'lobbychat_delete',
-            'lobbychat_pin', 'lobbychat_unpin',
+            'lobbychat_pin', 'lobbychat_unpin', 'lobbychat_clear',
         ];
         foreach ( $actions as $a ) {
             add_action( "wp_ajax_{$a}",        [ __CLASS__, $a ] );
@@ -209,6 +209,14 @@ class LobbyChat_Ajax {
         self::check_nonce();
         $uid = get_current_user_id();
         $ip  = self::get_ip();
+
+        // Lazy-cron fallback: WordPress cron only fires on site traffic, so on
+        // low-traffic installs (e.g. a chat enabled only during a weekly event)
+        // the scheduled daily cleanup may never run. Run an inline prune here,
+        // throttled to at most once per hour, so retention works even with no
+        // background traffic.
+        self::maybe_prune();
+
         // Nonce already verified above; phpcs can't trace cross-method.
         // phpcs:ignore WordPress.Security.NonceVerification.Missing
         $since_id = isset( $_POST['since_id'] ) ? intval( $_POST['since_id'] ) : 0;
@@ -230,6 +238,73 @@ class LobbyChat_Ajax {
             'logged_in' => (bool) $uid,
             'user_id'   => $uid,
         ]);
+    }
+
+    /**
+     * Run message pruning inline, at most once per hour, as a fallback for
+     * WP-Cron not firing on low-traffic sites. Uses a transient as a throttle
+     * lock so it doesn't run a DELETE on every single chat poll.
+     */
+    private static function maybe_prune() {
+        $days = (int) get_option( 'lobbychat_prune_days', 30 );
+        if ( $days <= 0 ) {
+            return; // retention disabled
+        }
+        // Throttle: only attempt once per hour.
+        if ( get_transient( 'lobbychat_prune_lock' ) ) {
+            return;
+        }
+        set_transient( 'lobbychat_prune_lock', 1, HOUR_IN_SECONDS );
+        LobbyChat_DB::prune( $days );
+    }
+
+    /**
+     * Verify Cloudflare Turnstile if it's enabled in settings.
+     *
+     * @param int $uid Current user ID (0 for guests).
+     * @return true|string True if passed/not required, or an error message string.
+     */
+    private static function verify_turnstile_if_required( $uid ) {
+        if ( ! get_option( 'lobbychat_turnstile_enabled', 0 ) ) {
+            return true; // disabled
+        }
+        $secret = trim( (string) get_option( 'lobbychat_turnstile_secret_key', '' ) );
+        $site   = trim( (string) get_option( 'lobbychat_turnstile_site_key', '' ) );
+        if ( $secret === '' || $site === '' ) {
+            return true; // misconfigured — fail open so chat isn't bricked
+        }
+        // Logged-in users can be exempted.
+        if ( $uid && get_option( 'lobbychat_turnstile_guests_only', 1 ) ) {
+            return true;
+        }
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce already checked in caller
+        $token = isset( $_POST['cf_turnstile_response'] )
+            ? sanitize_text_field( wp_unslash( $_POST['cf_turnstile_response'] ) )
+            : '';
+        if ( $token === '' ) {
+            return __( 'Please complete the spam check before posting.', 'lobbychat' );
+        }
+
+        $resp = wp_remote_post( 'https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+            'timeout' => 8,
+            'body'    => [
+                'secret'   => $secret,
+                'response' => $token,
+                'remoteip' => self::get_ip(),
+            ],
+        ] );
+
+        if ( is_wp_error( $resp ) ) {
+            // Cloudflare unreachable — fail open so an outage doesn't block chat.
+            return true;
+        }
+
+        $data = json_decode( wp_remote_retrieve_body( $resp ), true );
+        if ( ! empty( $data['success'] ) ) {
+            return true;
+        }
+        return __( 'Spam check failed — please reload the page and try again.', 'lobbychat' );
     }
 
     /* ── PING: keep-alive ─────────────────────────────── */
@@ -277,6 +352,12 @@ class LobbyChat_Ajax {
             if ( strlen( $guest_name ) > 30 ) self::err( __( 'Name too long.', 'lobbychat' ) );
         }
         // phpcs:enable WordPress.Security.NonceVerification.Missing
+
+        // Cloudflare Turnstile verification (if enabled in settings).
+        $ts_check = self::verify_turnstile_if_required( $uid );
+        if ( $ts_check !== true ) {
+            self::err( $ts_check, 403 );
+        }
 
         if ( ! $message ) self::err( __( 'Message cannot be empty.', 'lobbychat' ) );
         if ( mb_strlen( $message ) > $max_length ) self::err( __( 'Message too long.', 'lobbychat' ) );
@@ -453,6 +534,19 @@ class LobbyChat_Ajax {
         if ( ! self::is_mod( get_current_user_id() ) ) self::err( __( 'Not authorised.', 'lobbychat' ), 403 );
         LobbyChat_DB::unpin_all();
         self::ok();
+    }
+
+    /* ── CLEAR ALL (moderator) ────────────────────────── */
+
+    public static function lobbychat_clear() {
+        self::check_nonce();
+        if ( ! self::is_mod( get_current_user_id() ) ) {
+            self::err( __( 'Not authorised.', 'lobbychat' ), 403 );
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $keep_pinned = ! isset( $_POST['clear_pinned'] ) || $_POST['clear_pinned'] !== '1';
+        $deleted = LobbyChat_DB::clear_all( $keep_pinned );
+        self::ok([ 'cleared' => true, 'deleted' => $deleted ]);
     }
 
     /* ── Link previews ────────────────────────────────── */

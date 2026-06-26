@@ -60,6 +60,7 @@ class LobbyChat_Shortcode {
 			'poll_interval' => (int) get_option( 'lobbychat_poll_interval', 30000 ),
 			'rate_logged'   => (int) get_option( 'lobbychat_rate_logged', 5 ),
 			'rate_guest'    => (int) get_option( 'lobbychat_rate_guest',  15 ),
+			'turnstile'     => self::turnstile_config( $uid ),
 			'i18n'          => [
 				'loading'        => __( 'Loading…', 'lobbychat' ),
 				'send'           => __( 'Send', 'lobbychat' ),
@@ -86,6 +87,11 @@ class LobbyChat_Shortcode {
 				'confirm_delete' => __( 'Delete this message?', 'lobbychat' ),
 				'confirm_report' => __( 'Report this message?', 'lobbychat' ),
 				'confirm_pin'    => __( 'Pin this message?', 'lobbychat' ),
+				'clear_confirm'  => __( 'Clear ALL chat messages? This cannot be undone. (Pinned messages are kept.)', 'lobbychat' ),
+				'clear_confirm_short' => __( 'Click again to clear all messages', 'lobbychat' ),
+				'clear_title'    => __( 'Clear all messages (moderator)', 'lobbychat' ),
+				'cleared'        => __( 'Chat cleared.', 'lobbychat' ),
+				'turnstile_wait' => __( 'Please complete the spam check first.', 'lobbychat' ),
 				'reported'       => __( 'Reported. Thanks.', 'lobbychat' ),
 				'already_reported' => __( 'Already reported.', 'lobbychat' ),
 				'type_first'     => __( 'Type a message first.', 'lobbychat' ),
@@ -111,8 +117,45 @@ class LobbyChat_Shortcode {
 		wp_enqueue_style( 'lobbychat' );
 		wp_enqueue_script( 'lobbychat' );
 
+		// Load the Cloudflare Turnstile API script if Turnstile is enabled.
+		$ts = self::turnstile_config( get_current_user_id() );
+		if ( ! empty( $ts['active'] ) ) {
+			wp_enqueue_script(
+				'lobbychat-turnstile',
+				'https://challenges.cloudflare.com/turnstile/v0/api.js',
+				[],
+				null,
+				true
+			);
+		}
+
 		ob_start();
 		include LOBBYCHAT_DIR . 'templates/lobbychat.php';
 		return ob_get_clean();
+	}
+
+	/**
+	 * Resolve whether Turnstile should be active for the current viewer,
+	 * plus the site key the front end needs.
+	 *
+	 * @param int $uid Current user ID (0 for guest).
+	 * @return array { active: bool, site_key: string }
+	 */
+	public static function turnstile_config( $uid ) {
+		$enabled  = (int) get_option( 'lobbychat_turnstile_enabled', 0 );
+		$site_key = trim( (string) get_option( 'lobbychat_turnstile_site_key', '' ) );
+		$secret   = trim( (string) get_option( 'lobbychat_turnstile_secret_key', '' ) );
+		$guests_only = (int) get_option( 'lobbychat_turnstile_guests_only', 1 );
+
+		$active = $enabled && $site_key !== '' && $secret !== '';
+		// If guests-only and the viewer is logged in, no widget needed.
+		if ( $active && $uid && $guests_only ) {
+			$active = false;
+		}
+
+		return [
+			'active'   => (bool) $active,
+			'site_key' => $active ? $site_key : '',
+		];
 	}
 }

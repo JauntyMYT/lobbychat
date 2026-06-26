@@ -304,4 +304,21 @@ class LobbyChat_DB {
             $days
         ) );
     }
+
+    /**
+     * Delete all messages. Used by the moderator "Clear chat" action.
+     *
+     * @param bool $keep_pinned When true, pinned messages are preserved.
+     * @return int Number of rows deleted.
+     */
+    public static function clear_all( $keep_pinned = true ) {
+        global $wpdb;
+        $table = $wpdb->prefix . self::TABLE_MESSAGES;
+        if ( $keep_pinned ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            return (int) $wpdb->query( "DELETE FROM {$table} WHERE is_pinned = 0" );
+        }
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return (int) $wpdb->query( "DELETE FROM {$table}" );
+    }
 }
